@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>우리 둘의 영어 6M</title>
+
+  <!-- Pretendard Font for clean Korean editorial typography -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Apple SD Gothic Neo', 'Noto Sans KR', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html, body {
+      height: 100%;
+      overscroll-behavior-y: none;
+      -webkit-tap-highlight-color: transparent;
+      font-feature-settings: "tnum" on, "lnum" on;
+    }
+
+    .pb-safe {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* 3D Flashcard Flip */
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .rotate-y-180 { transform: rotateY(180deg); }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* Bottom Sheet Slide-up Animation */
+    @keyframes sheetUp {
+      from { transform: translateY(100%); opacity: 0.85; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-sheet-up {
+      animation: sheetUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes softPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    .animate-soft-pulse {
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#E8E6E1] dark:bg-[#090B0F] text-[#1E2430] dark:text-[#EDF0F6] flex items-center justify-center min-h-[100dvh] md:py-4 transition-colors duration-200 antialiased">
+
+  <!-- ======================================================================= -->
+  <!-- MOBILE-FIRST APP SHELL (480px Centered on Desktop, Full-Bleed Mobile)   -->
+  <!-- ======================================================================= -->
+  <div id="app-shell" class="relative w-full max-w-[480px] h-[100dvh] md:h-[calc(100dvh-2rem)] md:max-h-[900px] bg-[#F5F5F2] dark:bg-[#101318] md:rounded-[32px] md:shadow-2xl md:border md:border-[#E2E0DA] dark:md:border-[#232834] flex flex-col overflow-hidden transition-colors duration-200">
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast-container" class="absolute top-16 inset-x-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+    <!-- ===================================================================== -->
+    <!-- TOP FIXED HEADER                                                      -->
+    <!-- ===================================================================== -->
+    <header class="shrink-0 z-30 bg-white/95 dark:bg-[#161A22]/95 backdrop-blur-md border-b border-[#E6E4DE] dark:border-[#242A36] px-4 py-3">
+      <div class="flex items-center justify-between gap-2">
+        <!-- App Title & Room Sync Button -->
+        <div class="flex items-center gap-2 min-w-0">
+          <h1 class="text-[15.5px] font-bold tracking-tight text-[#1E2430] dark:text-white truncate">우리 둘의 영어 6M</h1>
+          <button id="open-sync-btn" type="button" aria-label="부부 동기화 방 코드 설정" class="inline-flex items-center gap-1.5 min-h-[28px] px-2.5 rounded-full bg-[#F1F0EC] dark:bg-[#222834] text-[11px] font-semibold text-[#566070] dark:text-[#9CA6B8] active:scale-95 transition shrink-0">
+            <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span id="header-room-code" class="max-w-[64px] truncate">LOVE6M</span>
+          </button>
+        </div>
+
+        <!-- Profile Switcher Pill + Dark Mode Toggle -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <div class="inline-flex items-center p-0.5 rounded-full bg-[#F0EFEA] dark:bg-[#202530] border border-[#E3E1DA] dark:border-[#2D3444]">
+            <button id="switch-husband" type="button" class="min-h-[34px] px-3 rounded-full text-[12px] font-bold transition flex items-center">
+              <span class="husband-name-text max-w-[52px] truncate">남편</span>
+            </button>
+            <button id="switch-wife" type="button" class="min-h-[34px] px-3 rounded-full text-[12px] font-bold transition flex items-center">
+              <span class="wife-name-text max-w-[52px] truncate">아내</span>
+            </button>
+          </div>
+
+          <button id="theme-toggle-btn" type="button" aria-label="라이트/다크 모드 전환" class="w-9 h-9 rounded-full bg-[#F0EFEA] dark:bg-[#202530] text-[#4B5563] dark:text-amber-300 flex items-center justify-center active:scale-90 transition">
+            <!-- Moon Icon (shown in light mode) -->
+            <svg class="w-[17px] h-[17px] block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <!-- Sun Icon (shown in dark mode) -->
+            <svg class="w-[17px] h-[17px] hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- MAIN SCROLLABLE WORKSPACE                                             -->
+    <!-- ===================================================================== -->
+    <main id="main-scroll" class="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-8 space-y-4">
+
+      <!-- =================================================================== -->
+      <!-- TAB 1: 홈 (Home)                                                    -->
+      <!-- =================================================================== -->
+      <section id="tab-home" class="tab-panel space-y-4">
+
+        <!-- 1. Couple Progress Comparison Card -->
+        <div class="bg-white dark:bg-[#161A22] rounded-[24px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-[#E6E4DE] dark:border-[#242A36]">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-[15px] font-bold text-[#1E2430] dark:text-white">우리 둘의 6개월 진도</h2>
+            <span class="text-[12px] font-medium text-[#858E9C]">각 24개 마일스톤</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Husband Progress Box -->
+            <div class="rounded-2xl p-3.5 bg-[#F6F8FC] dark:bg-[#1C212C] border border-[#E2E8F5] dark:border-[#2A3244]">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-[13.5px] font-bold text-[#1E2430] dark:text-white truncate"><span class="husband-name-text">남편</span> · 글로벌 비즈</span>
+              </div>
+              <span id="home-husband-month-badge" class="inline-block text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-100/80 dark:bg-indigo-950/80 px-2 py-0.5 rounded-full mb-3">1개월 차</span>
+
+              <div class="flex items-baseline justify-between mb-1.5">
+                <span id="home-husband-pct" class="text-[22px] font-extrabold tracking-tight text-[#1E2430] dark:text-white">0%</span>
+                <span id="home-husband-count" class="text-[12px] font-semibold text-[#858E9C]">0 / 24</span>
+              </div>
+              <div class="w-full h-2 bg-[#E1E6F2] dark:bg-[#2C3344] rounded-full overflow-hidden">
+                <div id="home-husband-bar" class="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-[#E2E8F5] dark:border-[#2A3244] flex items-center justify-between text-[12px]">
+                <span class="text-[#727C8C] dark:text-[#98A2B3]">연속 학습일</span>
+                <span class="font-bold text-[#1E2430] dark:text-white"><span id="home-husband-streak">0</span>일</span>
+              </div>
+            </div>
+
+            <!-- Wife Progress Box -->
+            <div class="rounded-2xl p-3.5 bg-[#F4F9F6] dark:bg-[#1A2320] border border-[#DCECE3] dark:border-[#263831]">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-[13.5px] font-bold text-[#1E2430] dark:text-white truncate"><span class="wife-name-text">아내</span> · 실생활 회화</span>
+              </div>
+              <span id="home-wife-month-badge" class="inline-block text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full mb-3">1개월 차</span>
+
+              <div class="flex items-baseline justify-between mb-1.5">
+                <span id="home-wife-pct" class="text-[22px] font-extrabold tracking-tight text-[#1E2430] dark:text-white">0%</span>
+                <span id="home-wife-count" class="text-[12px] font-semibold text-[#858E9C]">0 / 24</span>
+              </div>
+              <div class="w-full h-2 bg-[#DCECE3] dark:bg-[#273B33] rounded-full overflow-hidden">
+                <div id="home-wife-bar" class="h-full bg-emerald-600 dark:bg-emerald-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-[#DCECE3] dark:border-[#263831] flex items-center justify-between text-[12px]">
+                <span class="text-[#6B7C73] dark:text-[#95ABA0]">연속 학습일</span>
+                <span class="font-bold text-[#1E2430] dark:text-white"><span id="home-wife-streak">0</span>일</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Today's Next Step Card -->
+        <div id="next-step-card" class="bg-white dark:bg-[#161A22] rounded-[24px] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-[#E6E4DE] dark:border-[#242A36] space-y-3">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- 3. Quick One-Line Study Log CTA -->
+        <button id="open-log-sheet-btn" type="button" class="w-full min-h-[54px] px-5 rounded-[20px] bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] font-bold text-[15px] shadow-xs active:scale-[0.98] transition flex items-center justify-between">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+            <span>오늘 기록 남기기</span>
+          </span>
+          <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+
+        <!-- 4. Shared Study Log Feed ("함께 쓰는 한 줄 기록") -->
+        <div class="space-y-3 pt-1">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-[15px] font-bold text-[#1E2430] dark:text-white">함께 쓰는 한 줄 기록</h2>
+            <span id="feed-count-label" class="text-[12px] font-medium text-[#858E9C]">0건</span>
+          </div>
+
+          <div id="home-feed-list" class="space-y-2.5">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: 커리큘럼 (Curriculum)                                        -->
+      <!-- =================================================================== -->
+      <section id="tab-curriculum" class="tab-panel hidden space-y-4">
+
+        <!-- Header Toggle: 내 트랙 vs 배우자 트랙 보기 (읽기 전용) -->
+        <div class="bg-white dark:bg-[#161A22] rounded-[22px] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-[#E6E4DE] dark:border-[#242A36] space-y-3">
+          <div class="grid grid-cols-2 p-1 rounded-2xl bg-[#F1F0EC] dark:bg-[#101318]">
+            <button id="cur-view-mine" type="button" class="min-h-[42px] rounded-xl text-[13px] font-bold transition">내 트랙</button>
+            <button id="cur-view-partner" type="button" class="min-h-[42px] rounded-xl text-[13px] font-bold transition">배우자 트랙 보기 (읽기 전용)</button>
+          </div>
+
+          <div id="cur-track-banner" class="flex items-center justify-between px-1 text-[13px]">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- 6-Month Accordion List -->
+        <div id="curriculum-list" class="space-y-3">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: 표현장 (Phrasebook)                                          -->
+      <!-- =================================================================== -->
+      <section id="tab-vocab" class="tab-panel hidden space-y-3.5">
+
+        <!-- Top Controls: List / Flashcard Toggle + TTS Speed + Add Phrase -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex-1 grid grid-cols-2 p-1 rounded-2xl bg-[#E8E6E0] dark:bg-[#161A22]">
+            <button id="vocab-mode-list" type="button" class="min-h-[40px] rounded-xl text-[13px] font-bold transition">표현 리스트</button>
+            <button id="vocab-mode-card" type="button" class="min-h-[40px] rounded-xl text-[13px] font-bold transition">플래시카드 복습</button>
+          </div>
+
+          <button id="tts-speed-btn" type="button" class="min-h-[44px] px-3 rounded-2xl bg-white dark:bg-[#161A22] border border-[#E5E3DC] dark:border-[#242A36] text-[13px] font-bold text-[#374151] dark:text-[#E5E7EB] active:scale-95 transition shrink-0">
+            🔊 1.0x
+          </button>
+
+          <button id="open-vocab-sheet-btn" type="button" aria-label="표현 추가" class="min-h-[44px] px-3.5 rounded-2xl bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] text-[12.5px] font-bold flex items-center justify-center gap-1 active:scale-95 transition shrink-0 shadow-xs">
+            <span>+ 표현 추가</span>
+          </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative">
+          <svg class="w-4 h-4 text-[#858E9C] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="vocab-search-input" type="search" placeholder="영어 표현, 한글 뜻, 상황 팁 검색..." class="w-full min-h-[44px] pl-10 pr-4 rounded-2xl bg-white dark:bg-[#161A22] border border-[#E6E4DE] dark:border-[#242A36] text-[13.5px] outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition" />
+        </div>
+
+        <!-- Track Filter Pills: 내 트랙 / 배우자 트랙 / ★ 북마크 -->
+        <div id="vocab-filter-pills" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- View A: Phrase List -->
+        <div id="vocab-list-container" class="space-y-2.5">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- View B: Flashcard Review Mode -->
+        <div id="vocab-card-container" class="hidden space-y-4 pt-1">
+          <div class="flex items-center justify-between px-1">
+            <span id="fc-counter" class="text-[13px] font-bold text-[#647082] dark:text-[#9CA6B8]">1 / 14</span>
+            <span class="text-[12px] text-[#858E9C]">탭해서 뒤집기 · 좌우 스와이프</span>
+          </div>
+
+          <div id="fc-stage" class="perspective-1000 w-full h-[310px] cursor-pointer select-none">
+            <div id="fc-inner" class="relative w-full h-full transform-style-3d">
+              <!-- Front: Korean Meaning -->
+              <div class="absolute inset-0 backface-hidden bg-white dark:bg-[#161A22] border border-[#E6E4DE] dark:border-[#242A36] rounded-[28px] p-6 flex flex-col items-center justify-center text-center shadow-xs">
+                <span id="fc-tag" class="px-3 py-1 rounded-full text-[12px] font-semibold bg-[#F1F0EC] dark:bg-[#222834] text-[#4B5563] dark:text-[#D1D5DB] mb-5">글로벌 비즈</span>
+                <p id="fc-ko" class="text-[20px] font-bold text-[#1E2430] dark:text-white leading-relaxed break-keep"></p>
+                <span class="mt-7 text-[12px] font-medium text-[#9CA3AF]">카드를 탭하면 영어 표현과 발음이 재생됩니다</span>
+              </div>
+
+              <!-- Back: English Sentence + Context Tip + TTS -->
+              <div class="absolute inset-0 backface-hidden rotate-y-180 bg-[#1E2430] dark:bg-[#1C222E] text-white border border-[#2C3344] rounded-[28px] p-6 flex flex-col items-center justify-center text-center shadow-md">
+                <p id="fc-en" class="text-[18.5px] font-bold leading-snug mb-3"></p>
+                <p id="fc-nuance" class="text-[13px] text-[#D1D5DB] bg-white/10 rounded-2xl px-3.5 py-2.5 leading-relaxed mb-5 break-keep"></p>
+                <button id="fc-audio-btn" type="button" class="min-h-[44px] px-5 rounded-full bg-white text-[#1E2430] font-bold text-[13px] active:scale-95 transition flex items-center gap-1.5">
+                  <span>🔊</span> 다시 듣기
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button id="fc-prev-btn" type="button" class="min-h-[50px] rounded-2xl bg-white dark:bg-[#161A22] border border-[#E6E4DE] dark:border-[#242A36] text-[#374151] dark:text-[#E5E7EB] font-bold text-[14px] active:scale-95 transition">← 이전 카드</button>
+            <button id="fc-next-btn" type="button" class="min-h-[50px] rounded-2xl bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] font-bold text-[14px] active:scale-95 transition">다음 카드 →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 4: AI 튜터 (AI Tutor)                                           -->
+      <!-- =================================================================== -->
+      <section id="tab-tutor" class="tab-panel hidden space-y-4">
+
+        <!-- Collapsible Universal Guide Box -->
+        <div class="bg-[#EEF6F1] dark:bg-[#15241D] border border-[#D1E7DA] dark:border-[#244033] rounded-[20px] overflow-hidden">
+          <button id="toggle-guide-btn" type="button" class="w-full px-4 py-3.5 flex items-center justify-between gap-2 text-left">
+            <div class="flex items-center gap-2 min-w-0">
+              <svg class="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span class="text-[13px] font-bold text-emerald-900 dark:text-emerald-300 truncate">무료·유료 제미나이 동일 퀄리티 활용법</span>
+            </div>
+            <svg id="guide-chevron" class="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="guide-content" class="hidden px-4 pb-4 pt-0.5 text-[13px] text-emerald-900/90 dark:text-emerald-200/90 space-y-1.5 leading-relaxed border-t border-[#D1E7DA]/70 dark:border-[#244033]">
+            <p class="pt-2"><strong>1. 무료(아내) & 유료(남편) 동일 방식:</strong> 아래 프롬프트를 복사해 제미나이 앱의 <strong>새 채팅</strong>에 붙여넣은 뒤, 바로 <strong>음성 대화(Gemini Live)</strong>나 채팅으로 연습하면 동일한 최고 퀄리티로 튜터링받을 수 있습니다.</p>
+            <p><strong>2. 세션 마무리:</strong> 대화가 끝나면 <strong>"피드백 줘"</strong>라고 말하세요. 원어민 업그레이드 표현 Top 3와 다음 연습 포인트를 깔끔하게 정리해 줍니다.</p>
+            <p class="text-[12px] opacity-90 pt-1"><strong>유료 사용자 팁:</strong> 자주 쓰는 롤플레잉 프롬프트는 제미나이의 <strong>Gem</strong>으로 저장해 두면 출퇴근길 원탭으로 바로 대화를 시작할 수 있습니다.</p>
+          </div>
+        </div>
+
+        <!-- 3 Mode Pills -->
+        <div class="grid grid-cols-3 p-1 rounded-2xl bg-[#E8E6E0] dark:bg-[#161A22]">
+          <button type="button" data-tmode="roleplay" class="tmode-btn min-h-[42px] px-1 rounded-xl text-[12px] font-bold transition">AI 롤플레잉</button>
+          <button type="button" data-tmode="nuance" class="tmode-btn min-h-[42px] px-1 rounded-xl text-[12px] font-bold transition">3단계 뉘앙스 교정</button>
+          <button type="button" data-tmode="eval" class="tmode-btn min-h-[42px] px-1 rounded-xl text-[12px] font-bold transition">월간 실전평가</button>
+        </div>
+
+        <!-- Dynamic Mode Config Card -->
+        <div class="bg-white dark:bg-[#161A22] rounded-[24px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-[#E6E4DE] dark:border-[#242A36] space-y-4">
+
+          <!-- Linked Curriculum Banner -->
+          <div id="tutor-linked-banner" class="hidden items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#F1F0EC] dark:bg-[#222834] text-[12px]">
+            <span id="tutor-linked-label" class="font-bold text-[#1E2430] dark:text-white truncate">커리큘럼 주제 연동됨</span>
+            <button id="clear-linked-btn" type="button" class="text-[#647082] dark:text-[#9CA6B8] font-semibold shrink-0">초기화</button>
+          </div>
+
+          <!-- MODE 1: AI Roleplay -->
+          <div id="tutor-ctrl-roleplay" class="space-y-4">
+            <div>
+              <label class="block text-[13px] font-bold text-[#374151] dark:text-[#D1D5DB] mb-2">페르소나 선택</label>
+              <div id="rp-quick-chips" class="flex flex-wrap gap-1.5">
+                <!-- Rendered dynamically per active profile -->
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[13px] font-bold text-[#374151] dark:text-[#D1D5DB] mb-2">난이도</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" data-diff="초급" class="diff-btn min-h-[44px] px-1 rounded-xl text-[12px] font-bold border transition">초급<span class="block text-[10px] font-normal opacity-80">천천히·힌트</span></button>
+                <button type="button" data-diff="중급" class="diff-btn min-h-[44px] px-1 rounded-xl text-[12px] font-bold border transition">중급<span class="block text-[10px] font-normal opacity-80">자연스럽게</span></button>
+                <button type="button" data-diff="실전" class="diff-btn min-h-[44px] px-1 rounded-xl text-[12px] font-bold border transition">실전<span class="block text-[10px] font-normal opacity-80">원어민·까다롭게</span></button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">상황 / 주제 (수정 가능)</label>
+              <textarea id="tutor-rp-input" rows="2" class="w-full p-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 text-[14px] leading-relaxed outline-none resize-none transition"></textarea>
+            </div>
+          </div>
+
+          <!-- MODE 2: 3-Step Nuance Correction -->
+          <div id="tutor-ctrl-nuance" class="hidden space-y-3.5">
+            <div>
+              <label class="block text-[13px] font-bold text-[#374151] dark:text-[#D1D5DB] mb-2">예시 문장 불러오기</label>
+              <div id="nuance-quick-chips" class="flex flex-wrap gap-1.5">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">전달하고 싶은 한국어 의도</label>
+              <textarea id="tutor-nuance-ko" rows="2" class="w-full p-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] leading-relaxed outline-none resize-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">내가 직접 만든 영어 초안 (선택)</label>
+              <textarea id="tutor-nuance-en" rows="2" class="w-full p-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] leading-relaxed outline-none resize-none"></textarea>
+            </div>
+          </div>
+
+          <!-- MODE 3: Monthly 5-Point Rubric Evaluation -->
+          <div id="tutor-ctrl-eval" class="hidden space-y-3.5">
+            <div>
+              <label class="block text-[13px] font-bold text-[#374151] dark:text-[#D1D5DB] mb-2">평가 월 선택 (1~6개월 차)</label>
+              <div id="eval-month-pills" class="grid grid-cols-6 gap-1.5">
+                <!-- 1M ~ 6M pills -->
+              </div>
+            </div>
+            <div id="eval-mission-summary" class="p-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] space-y-1">
+              <!-- Selected mission summary -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Generated Prompt Preview -->
+        <div class="bg-white dark:bg-[#161A22] rounded-[24px] p-5 border border-[#E6E4DE] dark:border-[#242A36] space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-[#858E9C] uppercase tracking-wider">Gemini Prompt Preview</span>
+            <span id="tutor-track-badge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300">글로벌 비즈 트랙</span>
+          </div>
+          <p id="tutor-prompt-preview" class="text-[13.5px] text-[#374151] dark:text-[#D1D5DB] whitespace-pre-wrap leading-relaxed max-h-[250px] overflow-y-auto pr-1"></p>
+        </div>
+
+        <!-- Prominent Copy & Launch Buttons -->
+        <div class="grid grid-cols-1 gap-2.5">
+          <button id="copy-tutor-prompt-btn" type="button" class="w-full min-h-[54px] rounded-[20px] bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] font-bold text-[15px] shadow-xs active:scale-[0.98] transition flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <span>프롬프트 복사하기</span>
+          </button>
+          <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="w-full min-h-[48px] rounded-[18px] bg-white dark:bg-[#161A22] border border-[#E2E0DA] dark:border-[#2A3140] text-[#374151] dark:text-[#E5E7EB] font-bold text-[14px] active:scale-[0.98] transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            <span>제미나이 앱/웹 열기</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- BOTTOM FIXED 4-TAB NAVIGATION                                         -->
+    <!-- ===================================================================== -->
+    <nav class="shrink-0 z-30 bg-white/95 dark:bg-[#161A22]/95 backdrop-blur-md border-t border-[#E6E4DE] dark:border-[#242A36] px-3 pt-1.5 pb-safe">
+      <div class="grid grid-cols-4 gap-1">
+        <button data-tab="home" type="button" class="nav-tab min-h-[52px] flex flex-col items-center justify-center gap-1 rounded-2xl transition">
+          <svg class="w-[21px] h-[21px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span class="text-[11px] font-semibold">홈</span>
+        </button>
+        <button data-tab="curriculum" type="button" class="nav-tab min-h-[52px] flex flex-col items-center justify-center gap-1 rounded-2xl transition">
+          <svg class="w-[21px] h-[21px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <span class="text-[11px] font-semibold">커리큘럼</span>
+        </button>
+        <button data-tab="vocab" type="button" class="nav-tab min-h-[52px] flex flex-col items-center justify-center gap-1 rounded-2xl transition">
+          <svg class="w-[21px] h-[21px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <span class="text-[11px] font-semibold">표현장</span>
+        </button>
+        <button data-tab="tutor" type="button" class="nav-tab min-h-[52px] flex flex-col items-center justify-center gap-1 rounded-2xl transition">
+          <svg class="w-[21px] h-[21px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          <span class="text-[11px] font-semibold">AI 튜터</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ===================================================================== -->
+    <!-- BOTTOM SHEET 1: DAILY ONE-LINE STUDY LOG                              -->
+    <!-- ===================================================================== -->
+    <div id="sheet-log" class="hidden absolute inset-0 z-40 bg-black/50 backdrop-blur-[2px] flex items-end justify-center">
+      <div class="w-full bg-white dark:bg-[#161A22] rounded-t-[28px] p-5 pb-safe shadow-2xl animate-sheet-up max-h-[88dvh] overflow-y-auto">
+        <div class="w-10 h-1 bg-[#D8D6CF] dark:bg-[#323A4A] rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-[17px] font-bold text-[#1E2430] dark:text-white">오늘 기록 남기기</h3>
+            <p id="log-sheet-date" class="text-[12px] text-[#858E9C] mt-0.5"></p>
+          </div>
+          <button type="button" class="close-sheet w-9 h-9 rounded-full flex items-center justify-center text-[#858E9C] hover:bg-[#F1F0EC] dark:hover:bg-[#222834]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="log-form" class="space-y-4">
+          <!-- One-Line Reflection (Required) -->
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">오늘 공부한 한 줄 기록 <span class="text-rose-500">*</span></label>
+            <textarea id="log-memo-input" rows="2" required placeholder="예: 출근길 지하철에서 본사 매니저와 주간 현황 보고 롤플레잉 완료!" class="w-full p-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] outline-none resize-none"></textarea>
+          </div>
+
+          <!-- Optional Best Expression -->
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">오늘의 베스트 표현 (선택)</label>
+            <input id="log-phrase-input" type="text" placeholder="예: Just to make sure we're on the same page..." class="w-full min-h-[44px] px-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] outline-none" />
+          </div>
+
+          <!-- Optional AI Tutor Score (5.0 Scale) -->
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">AI 튜터 점수 (선택 · 5점 만점)</label>
+            <input id="log-score-input" type="number" min="0" max="5" step="0.1" placeholder="예: 4.3" class="w-full min-h-[44px] px-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] outline-none" />
+          </div>
+
+          <button type="submit" class="w-full min-h-[52px] rounded-2xl bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] font-bold text-[15px] active:scale-[0.98] transition">
+            기록 공유하기
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- BOTTOM SHEET 2: ADD CUSTOM EXPRESSION                                 -->
+    <!-- ===================================================================== -->
+    <div id="sheet-vocab" class="hidden absolute inset-0 z-40 bg-black/50 backdrop-blur-[2px] flex items-end justify-center">
+      <div class="w-full bg-white dark:bg-[#161A22] rounded-t-[28px] p-5 pb-safe shadow-2xl animate-sheet-up max-h-[88dvh] overflow-y-auto">
+        <div class="w-10 h-1 bg-[#D8D6CF] dark:bg-[#323A4A] rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-[17px] font-bold text-[#1E2430] dark:text-white">새 표현 추가</h3>
+          <button type="button" class="close-sheet w-9 h-9 rounded-full flex items-center justify-center text-[#858E9C] hover:bg-[#F1F0EC] dark:hover:bg-[#222834]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="vocab-form" class="space-y-3.5">
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">트랙 선택</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-vtrack="husband" class="vcat-pill min-h-[40px] rounded-xl text-[13px] font-bold border transition">글로벌 비즈</button>
+              <button type="button" data-vtrack="wife" class="vcat-pill min-h-[40px] rounded-xl text-[13px] font-bold border transition">실생활 회화</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">영어 문장 <span class="text-rose-500">*</span></label>
+            <textarea id="vocab-en-input" rows="2" required placeholder="AI 튜터 피드백에서 배운 좋은 문장을 입력해 보세요" class="w-full p-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] outline-none resize-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">한국어 뜻 <span class="text-rose-500">*</span></label>
+            <input id="vocab-ko-input" type="text" required placeholder="예: 서로 같은 방향으로 이해했는지 확인하고 싶습니다." class="w-full min-h-[44px] px-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-[13px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">상황 / 뉘앙스 팁 (선택)</label>
+            <input id="vocab-nuance-input" type="text" placeholder="예: 본사 미팅에서 오해를 미리 방지할 때 유용" class="w-full min-h-[44px] px-3.5 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] outline-none" />
+          </div>
+
+          <button type="submit" class="w-full min-h-[52px] rounded-2xl bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] font-bold text-[15px] active:scale-[0.98] transition">
+            표현장에 저장
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- BOTTOM SHEET 3: COUPLE ROOM SYNC & PROFILE SETTINGS                   -->
+    <!-- ===================================================================== -->
+    <div id="sheet-sync" class="hidden absolute inset-0 z-40 bg-black/50 backdrop-blur-[2px] flex items-end justify-center">
+      <div class="w-full bg-white dark:bg-[#161A22] rounded-t-[28px] p-5 pb-safe shadow-2xl animate-sheet-up max-h-[86dvh] overflow-y-auto">
+        <div class="w-10 h-1 bg-[#D8D6CF] dark:bg-[#323A4A] rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-[17px] font-bold text-[#1E2430] dark:text-white">부부 실시간 동기화 설정</h3>
+          <button type="button" class="close-sheet w-9 h-9 rounded-full flex items-center justify-center text-[#858E9C] hover:bg-[#F1F0EC] dark:hover:bg-[#222834]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="sync-form" class="space-y-4">
+          <div class="p-4 rounded-2xl bg-[#F5F5F2] dark:bg-[#101318] space-y-2">
+            <label class="block text-[13px] font-bold text-[#1E2430] dark:text-white">커플 방 코드 (Room Code)</label>
+            <p class="text-[12px] text-[#647082] dark:text-[#9CA6B8] leading-relaxed">두 분 스마트폰에서 같은 방 코드를 입력하면 커리큘럼 진도, 한 줄 기록, 좋아요, 저장 표현이 실시간으로 동기화됩니다.</p>
+            <div class="flex gap-2 pt-1">
+              <input id="sync-room-input" type="text" required maxlength="12" class="flex-1 min-h-[44px] px-3.5 rounded-xl bg-white dark:bg-[#161A22] border border-[#E2E0DA] dark:border-[#2C3344] text-[15px] font-bold uppercase tracking-wider outline-none" />
+              <button id="copy-room-btn" type="button" class="min-h-[44px] px-4 rounded-xl bg-[#1E2430] dark:bg-[#2E3648] text-white text-[13px] font-bold active:scale-95 transition shrink-0">복사</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[12px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">남편 호칭 (글로벌 비즈)</label>
+              <input id="sync-husband-input" type="text" required maxlength="10" class="w-full min-h-[44px] px-3.5 rounded-xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] font-semibold outline-none" />
+            </div>
+            <div>
+              <label class="block text-[12px] font-semibold text-[#647082] dark:text-[#9CA6B8] mb-1.5">아내 호칭 (실생활 회화)</label>
+              <input id="sync-wife-input" type="text" required maxlength="10" class="w-full min-h-[44px] px-3.5 rounded-xl bg-[#F5F5F2] dark:bg-[#101318] text-[14px] font-semibold outline-none" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full min-h-[52px] rounded-2xl bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] font-bold text-[15px] active:scale-[0.98] transition">
+            저장하고 연결하기
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- APPLICATION LOGIC & FIREBASE FIRESTORE REAL-TIME SYNC                   -->
+  <!-- ======================================================================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, updateDoc, addDoc, deleteDoc,
+      collection, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. 6-MONTH DUAL-TRACK CURRICULUM (24 MILESTONES EACH)
+    //    Husband: Multinational HQ & Overseas Branch Business English
+    //    Wife: Mid-30s Real-Life, Travel & Lifestyle Conversation
+    // =========================================================================
+    const CURRICULUM = {
+      husband: [
+        {
+          month: 1,
+          theme: "글로벌 미팅 오프닝 & 현황 보고",
+          items: [
+            {
+              id: "h_m1_1", isMission: false,
+              title: "시차 배려 오프닝 & 자연스러운 스몰토크",
+              scenario: "유럽·미주 본사 또는 해외 지사 담당자와 화상 회의를 시작할 때, 시차를 배려하는 자연스러운 인사로 분위기를 풀고 본론(Agenda)으로 부드럽게 넘어가는 상황",
+              aiTopic: "글로벌 본사 매니저와 화상 회의를 시작하며 시차를 배려하는 자연스러운 스몰토크를 2~3턴 나눈 뒤 오늘의 아젠다로 전환하는 상황",
+              targets: [
+                { en: "Thanks for making time, especially with the time difference on your end.", ko: "특히 그쪽 시차에도 불구하고 시간 내주셔서 감사합니다.", tip: "유럽·미주 본사 화상 회의에서 가장 세련된 시차 배려 오프닝입니다." },
+                { en: "To be mindful of everyone's time, let's dive right into today's agenda.", ko: "모두의 시간을 아끼기 위해 오늘 아젠다로 바로 들어가 보겠습니다.", tip: "스몰토크에서 본론으로 깔끔하게 전환하는 만능 표현입니다." }
+              ]
+            },
+            {
+              id: "h_m1_2", isMission: false,
+              title: "주간 업무 현황 보고 (Status Update)",
+              scenario: "주간 싱크(Weekly Sync) 미팅에서 한국 지사의 완료·진행 중·대기 업무를 군더더기 없이 1분 안에 구조적으로 브리핑하는 상황",
+              aiTopic: "주간 싱크 미팅에서 본사 매니저에게 한국 지사의 완료 항목, 진행 중 업무, 승인 대기 건을 구조적으로 보고하는 상황",
+              targets: [
+                { en: "Here's a quick status update from the Korea branch: we're on track for this week's milestones.", ko: "한국 지사 현황을 짧게 공유드리면, 이번 주 마일스톤은 예정대로 순항 중입니다.", tip: "on track은 업무가 차질 없이 진행 중임을 알리는 핵심 표현입니다." },
+                { en: "Item A is wrapped up, Item B is in progress, and Item C is pending HQ approval.", ko: "A건은 마무리되었고, B건은 진행 중이며, C건은 본사 승인을 대기 중입니다.", tip: "완료·진행·대기 3단 구조로 말하면 원어민도 한눈에 파악합니다." }
+              ]
+            },
+            {
+              id: "h_m1_3", isMission: false,
+              title: "마감일·업무 범위·요구사항 재확인",
+              scenario: "본사 담당자가 빠르게 전달한 업무 범위(Scope), 핵심 수치, 마감 기한(타임존 포함)을 오해가 없도록 정확히 복창하며 재확인하는 상황",
+              aiTopic: "글로벌 미팅 중 본사 담당자가 빠르게 언급한 업무 범위와 마감 기한(한국 시간 기준)을 오해 없이 정중하게 재확인하는 상황",
+              targets: [
+                { en: "Just to make sure we're on the same page, you need the final report by Thursday EOD, Korea time?", ko: "서로 정확히 이해했는지 확인차 여쭙겠습니다. 한국 시간 목요일 퇴근 전까지 최종 보고서가 필요하신 거죠?", tip: "글로벌 협업에서는 마감 시점과 타임존을 반드시 함께 확인하세요." },
+                { en: "Could you clarify whether this scope includes the Q3 forecast as well?", ko: "이번 업무 범위에 3분기 예측치도 포함되는지 명확히 확인해 주실 수 있을까요?", tip: "애매한 지시는 clarify whether ~ 로 바로 짚고 넘어가는 게 프로페셔널합니다." }
+              ]
+            },
+            {
+              id: "h_m1_4", isMission: true,
+              title: "[월간 AI 미션] 본사 매니저 대상 3분 주간 현황 브리핑",
+              scenario: "1개월 차 종합 평가: 본사 매니저(AI)와 시차 배려 인사 → 한국 지사 주간 현황 보고 → 본사 추가 요청의 범위·마감일 재확인까지 3분 주간 미팅 완주하기",
+              aiTopic: "1개월 차 월간 실전 평가: 글로벌 본사 매니저(AI)와 3분 주간 현황 브리핑 미팅을 진행하며 오프닝, Status Update, 마감일 재확인까지 완주하기",
+              targets: [
+                { en: "Before we move on, let me quickly recap the action items on our side.", ko: "넘어가기 전에 저희 한국 지사 쪽 액션 아이템을 짧게 정리해 보겠습니다.", tip: "recap으로 보고를 닫으면 실무 신뢰도가 크게 올라갑니다." },
+                { en: "I'll follow up via email with the updated timeline right after this call.", ko: "미팅 직후 업데이트된 일정을 이메일로 팔로업 드리겠습니다.", tip: "회의 직후 서면 정리를 약속하는 정석 클로징입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 2,
+          theme: "본사·지사 업무 요청 & 일정 조율",
+          items: [
+            {
+              id: "h_m2_1", isMission: false,
+              title: "본사·해외 지사에 정중하고 명확하게 업무 요청하기",
+              scenario: "본사 유관 부서나 해외 지사 협업 파트너에게 필요한 자료, 검토 의견, 담당자 연결을 정중하면서도 기한이 명확하게 요청하는 상황",
+              aiTopic: "해외 지사 협업 파트너에게 다음 주 프로젝트에 필요한 데이터와 검토 의견을 기한을 명확히 정해 정중하게 요청하는 상황",
+              targets: [
+                { en: "Could you loop in the relevant owner on your team so we can get this moving?", ko: "진행이 될 수 있도록 그쪽 팀의 담당자분을 함께 연결해 주실 수 있을까요?", tip: "loop in은 관련 담당자를 대화·이메일에 참여시킬 때 매일 쓰는 표현입니다." },
+                { en: "It would be a huge help if your team could share the draft by Wednesday afternoon.", ko: "수요일 오후까지 초안을 공유해 주시면 저희 쪽에 큰 도움이 될 것 같습니다.", tip: "부담을 줄이면서도 명확한 기한을 제시하는 고급 요청 화법입니다." }
+              ]
+            },
+            {
+              id: "h_m2_2", isMission: false,
+              title: "무리한 일정·요구 정중히 조율하기 (Pushback & 대안 제시)",
+              scenario: "본사에서 현실적으로 불가능한 짧은 마감 기한이나 갑작스러운 추가 업무를 요청했을 때, 감정 없이 선을 긋고 현실적인 대안을 제시하는 상황",
+              aiTopic: "본사 매니저가 이번 주 금요일까지 무리한 추가 리포트를 요청했을 때, 정중하게 Pushback하고 현실적인 일정과 대안을 합의하는 상황",
+              targets: [
+                { en: "To manage expectations, delivering the full analysis by Friday isn't realistic with our current bandwidth.", ko: "기대치를 미리 맞추기 위해 말씀드리면, 현재 업무 여력상 금요일까지 전체 분석을 마치기는 현실적으로 어렵습니다.", tip: "To manage expectations + bandwidth(업무 여력)는 외국계 Pushback의 정석입니다." },
+                { en: "What we can do is share the key highlights on Friday and follow up with the full deck next Wednesday.", ko: "대신 금요일에 핵심 요약본을 먼저 드리고, 전체 자료는 다음 주 수요일에 전달드릴 수 있습니다.", tip: "거절만 하지 않고 'What we can do is ~'로 대안을 제시하세요." }
+              ]
+            },
+            {
+              id: "h_m2_3", isMission: false,
+              title: "한국 지사 상황(Local Context) 논리적으로 설명하기",
+              scenario: "본사의 글로벌 표준 가이드라인이 한국 시장 특성이나 현지 고객 기대치와 맞지 않을 때, 반발이 아닌 설득력 있는 현지 맥락으로 설명하는 상황",
+              aiTopic: "본사가 내린 글로벌 가이드라인을 그대로 적용하기 어려운 한국 지사의 현지 시장 특성(Local Context)을 설명하고 유연한 적용을 요청하는 상황",
+              targets: [
+                { en: "From the local branch perspective, Korean clients have slightly different expectations on this point.", ko: "현지 지사 관점에서 보면, 한국 고객들은 이 부분에 대해 기대치가 다소 다릅니다.", tip: "From the local branch perspective로 지사의 전문성을 자연스럽게 드러냅니다." },
+                { en: "We fully support the global direction, though we may need a bit of flexibility to adapt it locally.", ko: "글로벌 방향성에는 전적으로 공감하지만, 현지에 맞게 적용하려면 약간의 유연성이 필요합니다.", tip: "본사 의도를 먼저 존중한 뒤 예외를 요청하면 설득력이 배가됩니다." }
+              ]
+            },
+            {
+              id: "h_m2_4", isMission: true,
+              title: "[월간 AI 미션] 일정 재협상 및 대안 합의 롤플레잉",
+              scenario: "2개월 차 종합 평가: 본사 매니저(AI)의 촉박한 추가 업무 요청에 대해 현재 한국 지사 업무 여력과 우선순위를 근거로 정중히 Pushback하고 현실적인 대안에 합의하기",
+              aiTopic: "2개월 차 월간 실전 평가: 본사 매니저(AI)와 촉박한 마감 기한을 재협상하고, 우선순위 조정(Trade-off) 및 단계별 제출 대안에 합의하는 롤플레잉",
+              targets: [
+                { en: "If we prioritize this urgent request, we'll need to push back the Q2 review by three days.", ko: "이 긴급 요청을 최우선으로 처리하려면, 2분기 리뷰 일정을 3일 정도 미뤄야 합니다.", tip: "우선순위 맞교환(Trade-off)을 명확히 제시하는 시니어급 협상 문장입니다." },
+                { en: "Does that trade-off work for you, or would you prefer we keep the original schedule?", ko: "그렇게 조정해도 괜찮으실까요, 아니면 기존 일정을 유지하는 편을 선호하시나요?", tip: "선택지를 제시해 깔끔하게 합의를 이끌어냅니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 3,
+          theme: "화상 회의 브리핑 & 변경 사항 공유",
+          items: [
+            {
+              id: "h_m3_1", isMission: false,
+              title: "화면 공유하며 두괄식으로 핵심 브리핑하기",
+              scenario: "화상 회의에서 슬라이드나 리포트를 화면 공유하며, 장황한 배경 설명 대신 결론(Bottom Line)과 핵심 수치부터 짚어주는 상황",
+              aiTopic: "글로벌 미팅에서 분기 실적 또는 프로젝트 리포트를 화면 공유하며 두괄식(Bottom Line Up Front)으로 핵심 수치를 브리핑하는 상황",
+              targets: [
+                { en: "Let me share my screen—the bottom line is that our Q2 performance exceeded the target by 12%.", ko: "화면 공유드리겠습니다. 결론부터 말씀드리면 2분기 실적이 목표치를 12% 초과 달성했습니다.", tip: "the bottom line is ~ 로 결론을 먼저 던지는 것이 글로벌 보고의 기본입니다." },
+                { en: "If you look at the chart on the right, you'll notice a steady uptick since April.", ko: "오른쪽 차트를 보시면 4월 이후 꾸준한 상승세가 확인됩니다.", tip: "청중의 시선을 화면 특정 영역으로 안내하며 설명하면 집중도가 높아집니다." }
+              ]
+            },
+            {
+              id: "h_m3_2", isMission: false,
+              title: "계획·방향 변경 사항과 배경 명확히 공유하기",
+              scenario: "기존 프로젝트 일정·전략·범위가 변경되었을 때, 무엇이 바뀌었는지와 왜 바뀌었는지를 논리적으로 공유해 관계자들의 이해를 얻는 상황",
+              aiTopic: "해외 지사 및 본사 관계자들에게 프로젝트 계획이 변경된 핵심 내용과 변경 배경(Context)을 명확하게 공유하는 상황",
+              targets: [
+                { en: "There's been a slight shift in our rollout plan based on recent customer feedback.", ko: "최근 고객 피드백을 반영해 출시 계획에 약간의 변경이 있었습니다.", tip: "change 대신 slight shift를 쓰면 불안을 줄이면서 전문적으로 들립니다." },
+                { en: "To give you some context, this adjustment helps us reduce turnaround time by 20%.", ko: "배경을 설명드리자면, 이번 조정을 통해 처리 소요 시간을 20% 줄일 수 있습니다.", tip: "To give you some context로 변경 이유와 기대 효과를 자연스럽게 연결합니다." }
+              ]
+            },
+            {
+              id: "h_m3_3", isMission: false,
+              title: "회의 흐름 주도 & 쟁점 정리 (Parking Lot 활용)",
+              scenario: "여러 지사가 참여한 화상 회의에서 특정 세부 쟁점으로 논의가 길어질 때, 세련되게 보류(Parking Lot)하고 남은 안건으로 회의를 주도하는 상황",
+              aiTopic: "다국적 팀 화상 회의를 주도하면서 세부 이슈로 논의가 길어질 때 Parking Lot / Offline으로 깔끔하게 정리하고 다음 안건으로 넘어가는 상황",
+              targets: [
+                { en: "Let's park that for now and circle back after this call.", ko: "그 부분은 일단 보류해 두고 미팅 후에 다시 논의하시죠.", tip: "park that / circle back은 글로벌 회의 진행자의 필수 어휘입니다." },
+                { en: "Let's take the details offline so we can cover the remaining agenda items on time.", ko: "남은 안건들을 제시간에 다룰 수 있도록 세부 사항은 미팅 밖에서 별도로 논의하시죠.", tip: "take it offline은 회의 시간을 지키는 가장 정중한 표현입니다." }
+              ]
+            },
+            {
+              id: "h_m3_4", isMission: true,
+              title: "[월간 AI 미션] 프로젝트 주요 업데이트 5분 브리핑",
+              scenario: "3개월 차 종합 평가: 해외 지사 협업 파트너(AI)에게 리포트 핵심 수치와 계획 변경 배경을 두괄식으로 브리핑하고, 중간에 길어지는 질문은 Parking Lot으로 정리하기",
+              aiTopic: "3개월 차 월간 실전 평가: 해외 지사 협업 파트너(AI)를 대상으로 프로젝트 주요 업데이트와 변경 사항을 5분 브리핑하고 질문 흐름을 주도하기",
+              targets: [
+                { en: "To summarize the three key takeaways from this update, ...", ko: "이번 업데이트의 핵심 포인트 3가지를 요약해 드리자면, ...", tip: "숫자(three key takeaways)로 구조화하면 원어민도 훨씬 쉽게 이해합니다." },
+                { en: "I'll pause here to see if there are any quick questions before moving to the next slide.", ko: "다음 슬라이드로 넘어가기 전에 간단한 질문이 있으신지 잠시 멈추고 확인하겠습니다.", tip: "쌍방향 소통을 이끄는 여유 있는 전환 멘트입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 4,
+          theme: "이슈·리스크 조기 공유 & R&R 정렬",
+          items: [
+            {
+              id: "h_m4_1", isMission: false,
+              title: "일정 지연·리스크 조기 공유 및 기대치 관리",
+              scenario: "프로젝트에 지연이나 리스크가 감지되었을 때, 숨기지 않고 조기에(Early on) 투명하게 알리며 동시에 준비된 대응책을 함께 제시하는 상황",
+              aiTopic: "프로젝트에 예상치 못한 일정 지연 리스크가 발생해, 본사 매니저에게 조기에 투명하게 공유하고 완화 대책을 함께 보고하는 상황",
+              targets: [
+                { en: "I'd like to flag a potential delay early on so we have time to mitigate the risk.", ko: "리스크를 줄일 시간을 확보하기 위해 잠재적인 지연 가능성을 미리 공유드리고자 합니다.", tip: "flag an issue early on은 외국계에서 가장 신뢰받는 보고 태도입니다." },
+                { en: "The root cause has been identified, and we've already put a mitigation plan in place.", ko: "근본 원인은 파악되었으며, 이미 완화 대책을 가동해 둔 상태입니다.", tip: "이슈 보고와 동시에 해결 움직임을 붙여 본사를 안심시킵니다." }
+              ]
+            },
+            {
+              id: "h_m4_2", isMission: false,
+              title: "본사 지원 요청 및 업무 우선순위(Priority) 정렬",
+              scenario: "한국 지사 단독으로 해결하기 어려운 병목(Bottleneck) 상황에서 본사의 최종 승인, 리소스 지원, 분기 우선순위 정렬을 명확히 요청하는 상황",
+              aiTopic: "한국 지사 단독 해결이 어려운 병목 이슈에 대해 본사 매니저에게 필요한 의사결정과 리소스 지원을 구체적으로 요청하고 우선순위를 정렬하는 상황",
+              targets: [
+                { en: "To unblock this issue, we need HQ's sign-off on the revised budget by tomorrow.", ko: "이 병목을 풀기 위해서는 내일까지 수정된 예산에 대한 본사의 최종 승인이 필요합니다.", tip: "unblock(병목을 풀다)과 sign-off(최종 승인)는 실무 핵심 어휘입니다." },
+                { en: "Could you help us align on the priorities for this quarter given these resource constraints?", ko: "현재 리소스 제약을 고려해 이번 분기 우선순위를 함께 맞춰주실 수 있을까요?", tip: "align on the priorities로 본사와 지사의 목표를 일치시킵니다." }
+              ]
+            },
+            {
+              id: "h_m4_3", isMission: false,
+              title: "부서·지사 간 오해 해소 및 R&R 명확화",
+              scenario: "본사·타 지사와의 커뮤니케이션 혼선으로 업무가 누락되거나 중복되었을 때, 비난 없이(No-blame) 사실관계를 정리하고 역할과 책임(R&R)을 명확히 하는 상황",
+              aiTopic: "해외 지사 파트너와 업무 범위(R&R) 혼선으로 오해가 생긴 상황에서, 비난 없이 사실관계를 정리하고 앞으로의 역할 분담을 명확히 합의하는 상황",
+              targets: [
+                { en: "I think there may have been a slight miscommunication on who owns this deliverable.", ko: "이 산출물을 누가 담당하는지에 대해 약간의 소통 착오가 있었던 것 같습니다.", tip: "상대를 탓하지 않고 miscommunication으로 부드럽게 문제를 꺼냅니다." },
+                { en: "Moving forward, let's clarify the roles and responsibilities so nothing falls through the cracks.", ko: "앞으로는 누락되는 일이 없도록 역할과 책임(R&R)을 명확히 해두시죠.", tip: "fall through the cracks(누락되다)는 원어민 비즈니스 회화 단골 이디엄입니다." }
+              ]
+            },
+            {
+              id: "h_m4_4", isMission: true,
+              title: "[월간 AI 미션] 예상치 못한 이슈 발생 시 긴급 대응 회의",
+              scenario: "4개월 차 종합 평가: 핵심 프로젝트에 갑작스러운 지연 이슈가 발생한 긴급 상황에서 본사 매니저(AI)에게 원인과 대응안을 보고하고 필요한 본사 지원 이끌어내기",
+              aiTopic: "4개월 차 월간 실전 평가: 예상치 못한 프로젝트 지연 이슈가 발생한 긴급 대응 회의에서 본사 매니저(AI)에게 투명하게 보고하고 본사 지원 및 R&R을 합의하기",
+              targets: [
+                { en: "Here is where we need HQ's support to keep the overall launch date intact.", ko: "전체 런칭 일정을 지키기 위해 본사의 지원이 필요한 부분은 바로 여기입니다.", tip: "도움이 필요한 지점을 정확히 짚어주는 간결한 에스컬레이션 표현입니다." },
+                { en: "I'll send a daily progress check-in until this issue is fully resolved.", ko: "이 이슈가 완전히 해결될 때까지 매일 진행 상황을 공유드리겠습니다.", tip: "위기 상황에서 본사를 안심시키는 가장 확실한 팔로업 약속입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 5,
+          theme: "의견 제시, 설득 & Q&A 방어",
+          items: [
+            {
+              id: "h_m5_1", isMission: false,
+              title: "본사 의견에 건설적으로 반대 의견 제시하기",
+              scenario: "본사나 타 지사의 제안에 동의하기 어려울 때, 무례하게 들리지 않으면서도(Disagreeing Professionally) 논리적인 근거와 함께 대안을 제시하는 상황",
+              aiTopic: "본사 측이 제안한 새로운 운영 프로세스에 대해 한국 지사 관점의 우려점을 전문적이고 건설적으로 반박하며 대안을 제시하는 상황",
+              targets: [
+                { en: "I see where you're coming from, though I have a slightly different take on the timeline.", ko: "어떤 의도이신지 충분히 이해합니다만, 일정 부분에서는 제 생각이 조금 다릅니다.", tip: "I disagree 대신 a slightly different take를 쓰면 세련되게 반론을 열 수 있습니다." },
+                { en: "Playing devil's advocate for a moment, what if local adoption takes longer than expected?", ko: "반대 입장에서 잠깐 생각해 보면, 현지 정착이 예상보다 오래 걸리면 어떻게 대응할까요?", tip: "개인적 반대가 아닌 객관적 리스크 점검임을 보여주는 고급 표현입니다." }
+              ]
+            },
+            {
+              id: "h_m5_2", isMission: false,
+              title: "한국 지사 개선안·제안서 논리적으로 설득하기",
+              scenario: "한국 지사가 주도하는 업무 개선안이나 파일럿 제안을 본사 의사결정권자에게 비즈니스 임팩트와 효율성 중심으로 설득하는 상황",
+              aiTopic: "본사 시니어 리더에게 한국 지사가 준비한 업무 개선안의 필요성과 기대 효과(비즈니스 임팩트)를 논리적으로 설득하는 상황",
+              targets: [
+                { en: "The key value of this proposal is that it streamlines cross-branch workflows and cuts costs.", ko: "이번 제안의 핵심 가치는 지사 간 업무 흐름을 단순화하고 비용을 절감한다는 점입니다.", tip: "의사결정권자가 가장 관심 갖는 키워드(streamline, cut costs)로 설득합니다." },
+                { en: "If we pilot this in Korea first, we can share proven results with other APAC branches.", ko: "한국에서 먼저 파일럿으로 검증하면, 입증된 결과를 다른 아태 지사에도 확산할 수 있습니다.", tip: "파일럿(Pilot) 제안은 본사의 부담을 낮춰 승인을 이끌어내는 최고의 전략입니다." }
+              ]
+            },
+            {
+              id: "h_m5_3", isMission: false,
+              title: "까다로운 질문과 즉석 Q&A 침착하게 방어하기",
+              scenario: "발표 직후 본사 리더로부터 예상치 못한 날카로운 질문이 들어왔을 때, 당황하지 않고 구조적으로 답변하거나 정확한 확인 후 회신을 약속하는 상황",
+              aiTopic: "본사 시니어 리더(AI)가 제안의 비용·리스크·실행 가능성에 대해 까다로운 꼬리질문을 던질 때 침착하게 방어하고 모르는 수치는 프로페셔널하게 넘기는 상황",
+              targets: [
+                { en: "That's a very fair question. Let me break that down into two parts.", ko: "정말 타당한 질문입니다. 두 가지 측면으로 나누어 답변드리겠습니다.", tip: "질문을 인정하며 break it down으로 구조를 잡으면 생각할 여유가 생깁니다." },
+                { en: "I don't have the exact numbers off the top of my head, so I'll verify and get back to you today.", ko: "정확한 수치가 지금 바로 떠오르지 않아 확인 후 오늘 중으로 회신드리겠습니다.", tip: "추측하지 않고 정확히 확인해 주겠다는 태도가 글로벌 리더들의 신뢰를 얻습니다." }
+              ]
+            },
+            {
+              id: "h_m5_4", isMission: true,
+              title: "[월간 AI 미션] 본사 시니어 리더 설득 & Q&A 모의전",
+              scenario: "5개월 차 종합 평가: 본사 시니어 리더(AI)에게 한국 지사의 개선 제안안을 설득력 있게 발표하고, 이어지는 날카로운 Q&A를 침착하게 방어해 승인 이끌어내기",
+              aiTopic: "5개월 차 월간 실전 평가: 본사 시니어 리더(AI)에게 한국 지사 제안안을 설득하고 예산·일정·리스크에 대한 까다로운 Q&A를 방어하는 모의전",
+              targets: [
+                { en: "Looking at the data, the long-term efficiency far outweighs the initial setup effort.", ko: "데이터를 보면 장기적인 효율성이 초기 세팅 부담을 훨씬 상회합니다.", tip: "far outweighs는 비용 대비 효과를 설득할 때 쓰는 강력한 임원용 표현입니다." },
+                { en: "Would you be comfortable giving us the green light for a 4-week pilot?", ko: "4주간의 파일럿 진행에 대해 승인(Green Light)을 주실 수 있을까요?", tip: "최종 의사결정을 자연스럽게 이끌어내는 클로징 질문입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 6,
+          theme: "뉘앙스 조절 & 실전 종합 미팅",
+          items: [
+            {
+              id: "h_m6_1", isMission: false,
+              title: "직설적(본사) vs 완곡한(협업) 비즈니스 뉘앙스 조절",
+              scenario: "유럽·미국 본사의 직설적인 피드백에 위축되지 않고 명료하게 응답하며, 상황에 따라 단호한 톤과 부드러운 협업 톤을 자유롭게 조절하는 연습",
+              aiTopic: "직설적으로 피드백하는 본사 매니저와의 대화에서 의도를 정확히 파악하고, 상황에 맞게 단호하거나 완곡한 톤으로 유연하게 대응하는 상황",
+              targets: [
+                { en: "I appreciate the direct feedback—let's focus on how we can close that gap right away.", ko: "솔직한 피드백 감사합니다. 그 격차를 바로 좁힐 수 있는 방법에 집중해 보시죠.", tip: "직설적 피드백을 해결 중심으로 성숙하게 받아치는 표현입니다." },
+                { en: "To be candid, we'll need clearer ownership from HQ to make this initiative succeed.", ko: "솔직히 말씀드리면, 이 프로젝트가 성공하려면 본사 쪽의 더 명확한 오너십이 필요합니다.", tip: "To be candid는 예의를 지키면서도 핵심 요구를 단호하게 짚어줍니다." }
+              ]
+            },
+            {
+              id: "h_m6_2", isMission: false,
+              title: "글로벌 타운홀·지역 회의에서 우수 사례 발표하기",
+              scenario: "본사와 여러 해외 지사가 함께 모인 타운홀(Town Hall)이나 지역 회의에서 한국 지사의 성과와 Best Practice를 임팩트 있게 공유하는 상황",
+              aiTopic: "본사 및 해외 지사 임직원들이 모인 글로벌 지역 회의에서 한국 지사의 분기 성과와 우수 협업 사례(Best Practice)를 자신감 있게 발표하는 상황",
+              targets: [
+                { en: "I'm excited to share a recent success story from the Korea team that could benefit other regions.", ko: "다른 지역 지사에도 도움이 될 만한 한국 팀의 최근 성공 사례를 공유하게 되어 기쁩니다.", tip: "타 지사 청중의 관심을 단번에 끄는 글로벌 발표 오프닝입니다." },
+                { en: "The biggest lesson learned was that early alignment with HQ saved us weeks of rework.", ko: "가장 큰 교훈은 본사와의 초기 방향 정렬이 몇 주간의 재작업을 줄여주었다는 점입니다.", tip: "lesson learned로 성과를 팀 전체의 인사이트로 승화시킵니다." }
+              ]
+            },
+            {
+              id: "h_m6_3", isMission: false,
+              title: "회의 마무리 및 Next Steps·담당자 구두 확정",
+              scenario: "중요한 글로벌 회의를 끝내기 전, 결정된 사항·담당자·마감 기한(Next Steps)을 구두로 깔끔하게 확정해 후속 혼선을 원천 차단하는 상황",
+              aiTopic: "글로벌 프로젝트 미팅의 마지막 2분 동안 합의 사항, 담당자, 마감 기한(Next Steps)을 구두로 정리하고 확정하는 상황",
+              targets: [
+                { en: "To wrap up, let's confirm our next steps and make sure every action item has a clear owner.", ko: "마무리하자면, 다음 단계를 확정하고 모든 액션 아이템에 명확한 담당자가 지정되었는지 확인하시죠.", tip: "회의의 마무리를 주도하는 리더십 있는 클로징 문장입니다." },
+                { en: "I'll circulate a brief summary with the agreed deadlines within the next hour.", ko: "1시간 이내에 합의된 마감일이 담긴 간단한 요약본을 공유드리겠습니다.", tip: "circulate a summary는 글로벌 비즈니스 표준 표현입니다." }
+              ]
+            },
+            {
+              id: "h_m6_4", isMission: true,
+              title: "[월간 AI 미션] 10분 본사·해외 지사 합동 실전 모의 미팅",
+              scenario: "6개월 최종 졸업 평가: 본사 시니어 리더와 해외 지사 파트너(AI)가 참여하는 10분 합동 미팅에서 현황 보고 → 일정 조율 → 이슈 공유 → 제안 설득 → Next Steps 확정까지 완주하기",
+              aiTopic: "6개월 최종 졸업 실전 평가: 본사 시니어 리더와 해외 지사 파트너(AI)와의 10분 합동 모의 미팅에서 현황 보고, Pushback, 이슈 대응, 제안 설득, Next Steps 확정까지 완주하기",
+              targets: [
+                { en: "Thank you both for a productive discussion—I feel great about our alignment moving into Q4.", ko: "생산적인 논의 감사드립니다. 4분기를 앞두고 방향이 잘 맞춰진 것 같아 든든합니다.", tip: "다자간 글로벌 미팅을 기분 좋고 프로페셔널하게 마무리하는 표현입니다." },
+                { en: "Let's reconvene next Thursday at the same time to review the pilot results.", ko: "파일럿 결과를 리뷰하기 위해 다음 주 목요일 같은 시간에 다시 모이시죠.", tip: "reconvene(다시 모이다)은 고급 비즈니스 마무리 어휘입니다." }
+              ]
+            }
+          ]
+        }
+      ],
+
+      wife: [
+        {
+          month: 1,
+          theme: "일상 스몰토크 & 자기표현",
+          items: [
+            {
+              id: "w_m1_1", isMission: false,
+              title: "자연스러운 안부·날씨·주말 이야기 꺼내기",
+              scenario: "해외 카페나 원데이 클래스, 모임에서 처음 만난 외국인에게 부담스럽지 않게 날씨·주말 이야기로 자연스럽게 말문을 트는 상황",
+              aiTopic: "해외 감성 카페에서 처음 만난 외국인에게 날씨나 주말 이야기로 가볍고 자연스럽게 스몰토크를 시작하는 상황",
+              targets: [
+                { en: "Is this your first time here, or are you a regular?", ko: "여기 처음 오신 거예요, 아니면 단골이세요?", tip: "카페·레스토랑·클래스 어디서나 통하는 자연스러운 첫마디입니다." },
+                { en: "The weather is finally nice enough to spend the weekend outdoors.", ko: "날씨가 드디어 주말에 야외 활동하기 딱 좋아졌네요.", tip: "날씨와 주말 계획을 자연스럽게 연결하는 30대 일상 스몰토크입니다." }
+              ]
+            },
+            {
+              id: "w_m1_2", isMission: false,
+              title: "내 취향·관심사·직업 편하게 소개하기",
+              scenario: "딱딱한 자기소개 대신, 요즘 푹 빠진 취미와 내 일·라이프스타일을 3~4문장으로 매력 있고 편안하게 소개하는 연습",
+              aiTopic: "새로 만난 외국인 친구에게 내 직업과 요즘 즐기는 취미·관심사를 편안하고 자연스럽게 소개하는 상황",
+              targets: [
+                { en: "I've been really into Pilates and baking lately—it helps me unwind.", ko: "요즘 필라테스랑 베이킹에 푹 빠졌어요—스트레스 푸는 데 딱이에요.", tip: "be into ~ (푹 빠지다) + unwind(긴장을 풀다) 조합이 매우 세련됩니다." },
+                { en: "Weekdays are pretty hectic, so I try to slow down and recharge on weekends.", ko: "평일이 꽤 정신없어서 주말에는 좀 여유롭게 재충전하려고 해요.", tip: "busy 대신 hectic, rest 대신 recharge를 쓰면 훨씬 자연스럽습니다." }
+              ]
+            },
+            {
+              id: "w_m1_3", isMission: false,
+              title: "원어민처럼 리액션하고 자연스럽게 되묻기",
+              scenario: "'Really?', 'Good!'만 반복하지 않고, 상대방 이야기에 진심으로 공감하고 센스 있는 꼬리질문으로 대화를 이어가는 연습",
+              aiTopic: "외국인 친구가 최근 여행과 일상 이야기를 들려줄 때 풍부한 리액션으로 공감하고 자연스럽게 되묻는 상황",
+              targets: [
+                { en: "No way, I totally get what you mean!", ko: "진짜요? 무슨 말씀인지 완전 공감해요!", tip: "I agree보다 훨씬 따뜻하고 생동감 있는 공감 표현입니다." },
+                { en: "That sounds amazing—what was your favorite part about it?", ko: "정말 멋지게 들리네요—그중에서 어떤 점이 제일 좋으셨어요?", tip: "대화가 끊기지 않게 부드럽게 이어주는 만능 꼬리질문입니다." }
+              ]
+            },
+            {
+              id: "w_m1_4", isMission: true,
+              title: "[월간 AI 미션] 카페에서 외국인 친구와 3분 첫 만남 수다",
+              scenario: "1개월 차 종합 평가: 해외 카페에서 처음 만난 외국인 친구(AI)와 날씨·취향·주말 이야기를 주고받으며 3분간 자연스럽게 수다 떨기",
+              aiTopic: "1개월 차 월간 실전 평가: 해외 감성 카페에서 처음 만난 30대 외국인 친구(AI)와 3분간 스몰토크, 취향 소개, 리액션과 꼬리질문 주고받기",
+              targets: [
+                { en: "What about you? What do you usually do to recharge on weekends?", ko: "당신은 어때요? 주말에 재충전할 때 보통 뭐 하세요?", tip: "상대방에게 자연스럽게 대화 바통을 넘기는 질문입니다." },
+                { en: "It was so lovely chatting with you—enjoy the rest of your day!", ko: "얘기 나눠서 정말 즐거웠어요—남은 하루도 즐겁게 보내세요!", tip: "기분 좋게 첫 만남을 마무리하는 따뜻한 인사입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 2,
+          theme: "해외여행 핵심 서바이벌",
+          items: [
+            {
+              id: "w_m2_1", isMission: false,
+              title: "공항·호텔 체크인 및 룸 컨디션 요청하기",
+              scenario: "해외 호텔 체크인 시 고층 조용한 방, 레이트 체크아웃, 추가 어메니티 등 원하는 룸 컨디션을 정중하고 세련되게 요청하는 상황",
+              aiTopic: "해외 부티크 호텔 체크인 시 고층의 조용한 방과 레이트 체크아웃 가능 여부를 프런트 직원에게 정중하게 요청하는 상황",
+              targets: [
+                { en: "Would it be possible to get a quiet room on a higher floor?", ko: "혹시 고층의 조용한 방으로 배정받을 수 있을까요?", tip: "Can I have보다 훨씬 정중해 호텔 직원의 호감을 얻기 좋습니다." },
+                { en: "Could we leave our luggage here until check-in time?", ko: "체크인 시간까지 짐을 여기 맡겨둘 수 있을까요?", tip: "체크인 전후로 가장 많이 쓰이는 필수 호텔 표현입니다." }
+              ]
+            },
+            {
+              id: "w_m2_2", isMission: false,
+              title: "현지 맛집 추천받기, 주문 및 메뉴 커스텀",
+              scenario: "현지인에게 관광객 없는 로컬 맛집을 추천받고, 카페·레스토랑에서 얼음 적게·덜 달게·소스 따로 등 내 취향대로 주문하는 상황",
+              aiTopic: "해외 로컬 카페와 브런치 레스토랑에서 직원에게 인기 메뉴를 추천받고 얼음 적게, 드레싱 따로 등 커스텀 주문하는 상황",
+              targets: [
+                { en: "Could I get an iced oat latte, light on the ice and half-sweet?", ko: "아이스 오트 라떼로 주시고, 얼음 적게, 덜 달게 해주세요.", tip: "light on the ~ / half-sweet만 알면 전 세계 카페 주문이 쉬워집니다." },
+                { en: "I'm looking for somewhere a bit off the beaten path, not too touristy.", ko: "관광객이 너무 많지 않고 좀 숨겨진 로컬 맛집을 찾고 있어요.", tip: "off the beaten path는 여행 고수들이 쓰는 명표현입니다." }
+              ]
+            },
+            {
+              id: "w_m2_3", isMission: false,
+              title: "쇼핑·사이즈 문의·교환·환불 깔끔하게 말하기",
+              scenario: "해외 편집숍이나 백화점에서 옷 핏·사이즈·소재를 물어보고, 어제 산 제품의 사이즈 교환이나 환불을 당당하게 요청하는 상황",
+              aiTopic: "해외 편집숍에서 니트 사이즈와 핏을 문의하고, 어제 구입한 옷을 한 치수 큰 사이즈로 교환 요청하는 상황",
+              targets: [
+                { en: "Does this run small, or is it pretty true to size?", ko: "이 옷은 좀 작게 나온 편인가요, 아니면 정사이즈인가요?", tip: "run small / true to size는 해외 쇼핑 필수 표현입니다." },
+                { en: "I bought this yesterday, and I'd like to exchange it for a size up if possible.", ko: "어제 샀는데 가능하면 한 치수 큰 걸로 교환하고 싶어요.", tip: "a size up / a size down으로 사이즈 변경을 깔끔하게 말합니다." }
+              ]
+            },
+            {
+              id: "w_m2_4", isMission: true,
+              title: "[월간 AI 미션] 여행지 돌발 상황(예약 누락·분실) 해결하기",
+              scenario: "2개월 차 종합 평가: 호텔 예약이 누락되었거나 공항에서 수하물이 지연된 돌발 상황에서 현지 스태프(AI)와 침착하게 대화해 해결책 이끌어내기",
+              aiTopic: "2개월 차 월간 실전 평가: 해외 호텔 체크인 중 예약 누락/오버부킹이 발생한 돌발 상황에서 프런트 직원(AI)과 정중하지만 단호하게 협의해 대안을 이끌어내기",
+              targets: [
+                { en: "I have my confirmation email right here—could you double-check under my last name?", ko: "예약 확인 이메일이 여기 있는데, 제 성으로 다시 한 번 확인해 주실 수 있을까요?", tip: "예약 누락 시 당황하지 않고 침착하게 확인을 요청하는 표현입니다." },
+                { en: "I really appreciate you sorting this out so quickly.", ko: "빠르게 해결해 주셔서 정말 감사합니다.", tip: "문제 해결 후 기분 좋게 마무리하는 감사 인사입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 3,
+          theme: "감정·의견·경험 나누기",
+          items: [
+            {
+              id: "w_m3_1", isMission: false,
+              title: "최근 본 영화·드라마·책·맛집 생생하게 리뷰하기",
+              scenario: "'It was good'을 넘어, 스토리 몰입감·여운이 남은 결말·음식 풍미와 공간 분위기까지 어른스러운 어휘로 리뷰하는 연습",
+              aiTopic: "최근 재미있게 본 넷플릭스 시리즈나 영화, 그리고 인상 깊었던 맛집에 대해 외국인 친구와 생생하게 리뷰를 나누는 상황",
+              targets: [
+                { en: "The pacing was a bit slow at first, but the ending really stuck with me.", ko: "초반 전개는 좀 느렸는데 결말이 정말 오래 여운이 남았어요.", tip: "stick with someone(여운에 남다)은 콘텐츠 감상평 명표현입니다." },
+                { en: "It was way better than I expected—definitely worth the hype.", ko: "기대했던 것보다 훨씬 좋았어요—소문날 만하더라고요.", tip: "worth the hype는 맛집·전시·드라마 후기에 두루 쓰이는 표현입니다." }
+              ]
+            },
+            {
+              id: "w_m3_2", isMission: false,
+              title: "기분·피곤함·소소한 고민 솔직하게 표현하기",
+              scenario: "'I'm tired / happy' 대신 지친 느낌, 설렘, 후련함, 소소한 일상 고민까지 내 감정 상태를 섬세하게 전달하는 연습",
+              aiTopic: "긴 한 주를 끝낸 후의 피곤함이나 다가오는 휴가에 대한 설렘, 소소한 고민을 외국인 친구와 솔직하게 나누는 상황",
+              targets: [
+                { en: "I'm completely wiped out after a long week, so I'm craving a quiet night in.", ko: "긴 한 주를 보내고 완전히 녹초가 돼서, 오늘은 집에서 조용히 쉬고 싶어요.", tip: "wiped out(녹초가 된) + night in(집에서 보내는 저녁)은 원어민 일상 표현입니다." },
+                { en: "I've been looking forward to this trip for months—I'm so excited!", ko: "몇 달 동안 이 여행만 손꼽아 기다렸어요—정말 설레요!", tip: "기대감과 설렘을 자연스럽게 표현하는 필수 패턴입니다." }
+              ]
+            },
+            {
+              id: "w_m3_3", isMission: false,
+              title: "부담 없는 완곡한 거절과 약속 일정 잡기",
+              scenario: "친구와 브런치·저녁 약속 시간을 조율하고, 급한 일이 생겼을 때 미안함과 애정을 담아 자연스럽게 다음으로 미루는 상황",
+              aiTopic: "외국인 친구와 주말 브런치 약속 시간을 조율하다가 급한 일이 생겨 부담 없이 다음 주로 일정을 미루는 상황",
+              targets: [
+                { en: "Are you free sometime this weekend? Let's grab brunch!", ko: "이번 주말에 시간 괜찮으세요? 브런치 같이 먹어요!", tip: "가볍고 친근하게 약속을 제안하는 원어민 표현입니다." },
+                { en: "Something came up, so could we take a rain check on dinner?", ko: "갑자기 일이 생겨서 저녁 약속은 다음으로 미뤄도 될까요?", tip: "take a rain check은 '이번엔 아쉽지만 다음에 꼭 보자'는 세련된 거절입니다." }
+              ]
+            },
+            {
+              id: "w_m3_4", isMission: true,
+              title: "[월간 AI 미션] 취향과 라이프스타일 Q&A 5분 토크",
+              scenario: "3개월 차 종합 평가: 내가 좋아하는 동네·맛집·콘텐츠·휴식 방식에 대해 취향 모임 호스트(AI)와 5분간 즐겁게 Q&A 토크 나누기",
+              aiTopic: "3개월 차 월간 실전 평가: 취향 모임 호스트(AI)와 최근 본 콘텐츠, 좋아하는 카페 분위기, 주말 라이프스타일에 대해 5분간 Q&A 토크 나누기",
+              targets: [
+                { en: "It has such a cozy, laid-back atmosphere—definitely my kind of place.", ko: "아늑하고 여유로운 분위기네요—완전 제 스타일 공간이에요.", tip: "laid-back + my kind of place 조합으로 취향을 세련되게 표현합니다." },
+                { en: "Lately, I've been trying to prioritize quality over quantity in everything.", ko: "요즘은 모든 면에서 양보다 질을 우선시하려고 노력 중이에요.", tip: "30대 라이프스타일 대화에 아주 잘 어울리는 표현입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 4,
+          theme: "생활 밀착 실전 영어",
+          items: [
+            {
+              id: "w_m4_1", isMission: false,
+              title: "병원·약국에서 증상과 알레르기 정확히 설명하기",
+              scenario: "해외여행 중 목감기, 두통, 알레르기, 소화불량이 생겼을 때 증상과 기간을 정확히 말하고 졸리지 않는 약을 추천받는 상황",
+              aiTopic: "해외 약국에서 어제부터 시작된 목감기와 두통 증상을 설명하고 알레르기 여부를 알린 뒤 낮에 먹을 수 있는 약을 추천받는 상황",
+              targets: [
+                { en: "I've had a scratchy throat and a dull headache since yesterday.", ko: "어제부터 목이 칼칼하고 머리가 은은하게 계속 아파요.", tip: "scratchy throat(칼칼한 목), dull headache(묵직한 두통)은 필수 증상 어휘입니다." },
+                { en: "Do you have anything non-drowsy that I can take during the day?", ko: "낮에 먹을 수 있는 졸리지 않는 약이 있을까요?", tip: "non-drowsy(졸리지 않는)는 해외 약국 치트키 단어입니다." }
+              ]
+            },
+            {
+              id: "w_m4_2", isMission: false,
+              title: "고객센터·예약 변경·취소 전화로 문의하기",
+              scenario: "교통 체증으로 레스토랑 예약 시간에 늦거나, 투어·스파 예약 시간 변경 및 취소 규정을 전화로 침착하게 문의하는 상황",
+              aiTopic: "해외 레스토랑에 전화해 15분 정도 늦을 것 같다고 알리며 테이블 유지를 부탁하고, 다음 날 스파 예약 시간 변경을 문의하는 상황",
+              targets: [
+                { en: "We're running about 15 minutes behind—could you still hold our table?", ko: "15분 정도 늦을 것 같은데, 테이블을 계속 잡아주실 수 있을까요?", tip: "running behind는 '예정보다 늦어지고 있다'는 원어민 필수 표현입니다." },
+                { en: "I'd like to reschedule my appointment for tomorrow afternoon if there's an opening.", ko: "자리가 있다면 내일 오후로 예약을 변경하고 싶습니다.", tip: "if there's an opening(빈자리가 있다면)을 붙이면 매우 자연스럽습니다." }
+              ]
+            },
+            {
+              id: "w_m4_3", isMission: false,
+              title: "정중하게 불만 제기하고 해결책 요청하기",
+              scenario: "계산서 착오, 잘못 나온 메뉴, 객실 소음 등 불편한 상황에서 화내지 않고도 정확하고 단호하게 해결을 요청하는 상황",
+              aiTopic: "해외 레스토랑 계산서에 주문하지 않은 메뉴가 포함된 상황에서 직원에게 정중하게 착오를 알리고 수정을 요청하는 상황",
+              targets: [
+                { en: "Excuse me, I think there might be a small mix-up with our bill.", ko: "실례합니다, 계산서에 약간의 착오가 있는 것 같아서요.", tip: "mistake 대신 mix-up을 쓰면 공격적이지 않으면서도 정확히 전달됩니다." },
+                { en: "I noticed a small flaw on this item—would it be possible to swap it for a new one?", ko: "이 제품에 작은 하자가 있는데 새 상품으로 교환 가능할까요?", tip: "flaw(하자)와 swap(교환하다)으로 깔끔하게 요청합니다." }
+              ]
+            },
+            {
+              id: "w_m4_4", isMission: true,
+              title: "[월간 AI 미션] 현지 생활 트러블 해결 롤플레잉",
+              scenario: "4개월 차 종합 평가: 현지 스태프(AI)와 약국 증상 상담, 레스토랑 예약 시간 변경, 계산서 착오 수정 등 생활 밀착 트러블을 침착하게 해결하기",
+              aiTopic: "4개월 차 월간 실전 평가: 해외 현지 스태프(AI)와 약국 증상 상담, 예약 시간 변경, 계산서 착오 수정 미션을 연속 롤플레잉으로 해결하기",
+              targets: [
+                { en: "Could you walk me through how often I should take this?", ko: "이 약을 얼마나 자주 복용해야 하는지 설명해 주실 수 있을까요?", tip: "walk me through는 복용법·절차를 친절히 물어볼 때 유용합니다." },
+                { en: "Thanks so much for your help—I really appreciate it.", ko: "도와주셔서 정말 감사합니다—큰 도움이 되었어요.", tip: "모든 현지 응대를 기분 좋게 마무리하는 감사 표현입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 5,
+          theme: "깊이 있는 대화 & 스토리텔링",
+          items: [
+            {
+              id: "w_m5_1", isMission: false,
+              title: "기억에 남는 여행·일상 에피소드 재미있게 풀어내기",
+              scenario: "여행 중 겪었던 재미있는 해프닝이나 잊지 못할 순간을 '도입 → 하이라이트 → 느낀 점' 순서로 몰입감 있게 스토리텔링하는 연습",
+              aiTopic: "가장 기억에 남았던 여행 에피소드나 최근 주말에 있었던 재미있는 해프닝을 외국인 친구에게 흥미진진하게 스토리텔링하는 상황",
+              targets: [
+                { en: "The highlight of the trip was stumbling upon this tiny local bakery.", ko: "여행의 하이라이트는 우연히 작은 동네 빵집을 발견한 거였어요.", tip: "stumble upon(우연히 발견하다)은 스토리텔링에 생기를 불어넣습니다." },
+                { en: "Looking back, even getting caught in the rain turned into a great memory.", ko: "돌이켜보면 갑자기 비를 맞았던 것마저 좋은 추억이 됐어요.", tip: "Looking back으로 이야기를 따뜻하게 마무리합니다." }
+              ]
+            },
+            {
+              id: "w_m5_2", isMission: false,
+              title: "한국 문화·트렌드·일상 차이 소개하기",
+              scenario: "외국인 친구에게 서울의 매력적인 동네, 한국의 카페 문화, 좋아하는 한식 메뉴와 먹는 법을 쉽고 흥미롭게 영어로 설명하는 연습",
+              aiTopic: "한국 여행을 계획 중인 외국인 친구에게 서울의 추천 동네와 꼭 먹어봐야 할 한식, 한국의 카페 문화를 소개하는 상황",
+              targets: [
+                { en: "What makes this neighborhood special is the mix of traditional alleys and modern cafes.", ko: "이 동네가 특별한 이유는 전통 골목과 세련된 카페가 어우러진 점이에요.", tip: "한국의 매력을 세련된 영어로 소개하는 구조적 문장입니다." },
+                { en: "It's savory, slightly spicy, and goes amazingly well with a cold drink.", ko: "감칠맛 나고 살짝 매콤해서 시원한 음료랑 기가 막히게 잘 어울려요.", tip: "savory(감칠맛 나는)는 한식을 설명할 때 가장 유용한 형용사입니다." }
+              ]
+            },
+            {
+              id: "w_m5_3", isMission: false,
+              title: "상대방 생각에 공감하며 내 의견 부드럽게 덧붙이기",
+              scenario: "여행 스타일이나 라이프스타일에 대해 상대방과 의견이 다를 때, 어색해지지 않으면서도 내 시각을 부드럽고 당당하게 말하는 연습",
+              aiTopic: "여행 스타일(호캉스 vs 로컬 탐험)이나 워라밸에 대해 의견이 다른 외국인 친구에게 공감하며 내 생각을 부드럽게 덧붙이는 상황",
+              targets: [
+                { en: "I totally see your point, though I actually lean the other way on that.", ko: "무슨 말씀인지 완전 이해해요. 근데 저는 그 부분은 조금 다른 편이에요.", tip: "I disagree보다 훨씬 부드럽고 세련된 일상 표현입니다." },
+                { en: "Fair enough! I guess it really comes down to personal preference.", ko: "그럴 수 있죠! 결국 개인 취향 차이인 것 같아요.", tip: "서로 다른 의견을 쿨하게 인정할 때 쓰는 최고의 표현입니다." }
+              ]
+            },
+            {
+              id: "w_m5_4", isMission: true,
+              title: "[월간 AI 미션] 주말 브런치 7분 프리토킹",
+              scenario: "5개월 차 종합 평가: 외국인 친구(AI)와 주말 브런치를 먹으며 최근 여행 에피소드, 한국 문화, 라이프스타일 의견까지 7분간 깊이 있게 대화하기",
+              aiTopic: "5개월 차 월간 실전 평가: 30대 외국인 친구(AI)와 주말 브런치 테이블에서 여행 스토리텔링, 한국 문화 소개, 취향 의견을 나누는 7분 프리토킹",
+              targets: [
+                { en: "If you ask me, the best trips leave plenty of room for spontaneity.", ko: "제 생각엔 최고의 여행은 즉흥적인 여유를 넉넉히 남겨두는 여행이에요.", tip: "If you ask me로 자연스럽게 내 의견을 열어보세요." },
+                { en: "I hadn't thought of it that way—you actually make a good point.", ko: "그렇게는 생각 못 해봤는데, 듣고 보니 일리가 있네요.", tip: "상대 의견에 유연하게 반응하는 성숙한 화법입니다." }
+              ]
+            }
+          ]
+        },
+        {
+          month: 6,
+          theme: "자연스러운 원어민 뉘앙스 & 종합",
+          items: [
+            {
+              id: "w_m6_1", isMission: false,
+              title: "구동사와 필러(actually, to be honest)로 자연스럽게 잇기",
+              scenario: "교과서 영어에서 벗어나 catch up, end up, figure out 같은 핵심 구동사와 actually, to be honest 같은 자연스러운 연결어를 입에 붙이는 연습",
+              aiTopic: "오랜만에 만난 외국인 친구와 밀린 근황을 나누며(catch up) 원어민 구동사와 자연스러운 필러 표현을 활용해 수다 떠는 상황",
+              targets: [
+                { en: "To be honest, we ended up staying at the cafe for three hours just catching up.", ko: "솔직히 말하면, 밀린 수다를 떨다가 결국 카페에서 세 시간이나 있었어요.", tip: "to be honest + end up -ing + catch up의 완벽한 원어민 조합입니다." },
+                { en: "Actually, everything worked out way better than I expected.", ko: "사실은, 생각했던 것보다 훨씬 더 잘 풀렸어요.", tip: "work out(잘 풀리다)은 일상 대화 활용도가 매우 높습니다." }
+              ]
+            },
+            {
+              id: "w_m6_2", isMission: false,
+              title: "센스 있는 칭찬·감사·가벼운 유머 건네기",
+              scenario: "상대방의 스타일·배려·센스에 진심이 담긴 칭찬을 건네고, 어색하지 않은 가벼운 유머로 분위기를 한층 따뜻하게 만드는 연습",
+              aiTopic: "외국인 친구나 모임 호스트에게 진심 어린 칭찬과 감사를 전하고 가벼운 유머를 주고받는 상황",
+              targets: [
+                { en: "You have such a great eye for detail—this place is gorgeous!", ko: "디테일을 보는 안목이 정말 대단하시네요—이 공간 너무 멋져요!", tip: "have a great eye for ~ 는 스타일·공간·선물을 칭찬할 때 최고입니다." },
+                { en: "You're a lifesaver—I owe you a coffee next time!", ko: "완전 구세주세요—다음에 제가 커피 꼭 살게요!", tip: "친근하고 센스 있게 고마움을 표현하는 원어민 단골 문장입니다." }
+              ]
+            },
+            {
+              id: "w_m6_3", isMission: false,
+              title: "예상치 못한 질문에도 당황하지 않고 이어가기",
+              scenario: "적당한 단어가 바로 떠오르지 않거나 예상치 못한 질문을 받았을 때, 침묵하지 않고 자연스럽게 생각할 시간을 벌며 대화를 이어가는 연습",
+              aiTopic: "취향 모임에서 예상치 못한 질문을 받았을 때 당황하지 않고 자연스러운 연결 표현으로 생각을 정리해 대답하는 상황",
+              targets: [
+                { en: "That's a great question—let me think how to put this into words.", ko: "정말 좋은 질문이네요—이걸 말로 어떻게 표현하면 좋을지 잠깐 생각해 볼게요.", tip: "단어가 막힐 때 당황하지 않고 여유를 챙기는 최고의 문장입니다." },
+                { en: "Speaking of which, did you end up booking your autumn trip?", ko: "그 얘기 나와서 말인데, 가을 여행 결국 예약하셨어요?", tip: "Speaking of which는 화제를 물 흐르듯 전환하는 연결어입니다." }
+              ]
+            },
+            {
+              id: "w_m6_4", isMission: true,
+              title: "[월간 AI 미션] 10분 실전 프리토킹 종합 평가",
+              scenario: "6개월 최종 졸업 평가: 해외 여행지 카페에서 만난 30대 외국인 친구(AI)와 스몰토크·여행·취향·한국 문화·라이프스타일까지 10분 논스톱 프리토킹 완주하기",
+              aiTopic: "6개월 최종 졸업 실전 평가: 해외 여행지 카페에서 만난 30대 외국인 친구(AI)와 자유 주제로 10분간 끊김 없이 논스톱 프리토킹 완주하기",
+              targets: [
+                { en: "Time flew by! I can't believe we've been talking this long.", ko: "시간이 순식간에 갔네요! 벌써 이렇게 오래 얘기했다니 믿기지 않아요.", tip: "즐거운 10분 프리토킹을 기분 좋게 마무리하는 표현입니다." },
+                { en: "Let's definitely stay in touch—I'd love to catch up again soon.", ko: "우리 꼭 계속 연락해요—조만간 또 근황 나누고 싶어요.", tip: "따뜻하게 다음을 기약하는 자연스러운 클로징입니다." }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    const TOTAL_MILESTONES = 24;
+
+    // =========================================================================
+    // 2. 28 PRE-POPULATED PHRASES (14 GLOBAL HQ/BRANCH + 14 DAILY/TRAVEL)
+    // =========================================================================
+    const STARTER_EXPRESSIONS = [
+      // Husband: Global HQ & Branch Business English (14)
+      { id: "gb-1", track: "husband", isSeed: true, createdAt: 2028, english: "Just to make sure we're on the same page, could we double-check the deadline?", korean: "서로 같은 방향으로 이해했는지 확인차 마감일을 다시 체크해 볼까요?", nuance: "본사·지사 간 오해를 사전에 방지하는 가장 세련된 확인 질문입니다." },
+      { id: "gb-2", track: "husband", isSeed: true, createdAt: 2027, english: "From the local branch perspective, we need a bit more flexibility on this policy.", korean: "현지 지사 관점에서 보면, 이 정책에는 약간의 유연성이 필요합니다.", nuance: "한국 지사의 현지 상황(Local Context)을 설득력 있게 전달할 때 씁니다." },
+      { id: "gb-3", track: "husband", isSeed: true, createdAt: 2026, english: "To manage expectations, we might need an extra week to deliver the full report.", korean: "기대치를 미리 맞추기 위해 말씀드리면, 전체 보고서 제출에 일주일이 더 필요할 것 같습니다.", nuance: "무리한 일정을 정중하고 프로페셔널하게 조율(Pushback)하는 정석 표현입니다." },
+      { id: "gb-4", track: "husband", isSeed: true, createdAt: 2025, english: "Let's park that for now and circle back after this call.", korean: "그 부분은 일단 보류해 두고 미팅 후에 다시 논의하시죠.", nuance: "글로벌 회의에서 논의가 길어질 때 깔끔하게 정리(Parking Lot)하는 필수 표현입니다." },
+      { id: "gb-5", track: "husband", isSeed: true, createdAt: 2024, english: "Could we align on the priorities for this quarter before moving forward?", korean: "진행하기 전에 이번 분기 우선순위부터 함께 맞춰볼 수 있을까요?", nuance: "align on ~ 은 본사와 지사가 목표를 일치시킬 때 매일 쓰는 동사입니다." },
+      { id: "gb-6", track: "husband", isSeed: true, createdAt: 2023, english: "I'd like to flag a potential delay early on so we can mitigate the risk.", korean: "리스크를 줄일 수 있도록 잠재적인 지연 가능성을 미리 공유드리고 싶습니다.", nuance: "이슈를 숨기지 않고 조기에 투명하게 에스컬레이션할 때 신뢰를 얻습니다." },
+      { id: "gb-7", track: "husband", isSeed: true, createdAt: 2022, english: "Thanks for making time, especially with the time difference on your end.", korean: "특히 그쪽 시차에도 불구하고 시간 내주셔서 감사합니다.", nuance: "유럽·미주 본사와의 화상 회의를 부드럽게 여는 시차 배려 오프닝입니다." },
+      { id: "gb-8", track: "husband", isSeed: true, createdAt: 2021, english: "To unblock this, we need HQ's sign-off on the revised proposal by tomorrow.", korean: "이 병목을 해결하려면 내일까지 수정 제안서에 대한 본사 승인이 필요합니다.", nuance: "본사의 의사결정이나 리소스 지원을 명확히 요청할 때 유용합니다." },
+      { id: "gb-9", track: "husband", isSeed: true, createdAt: 2020, english: "I see where you're coming from, though I have a slightly different take on this.", korean: "어떤 의도이신지 충분히 이해합니다만, 이 부분에서는 제 생각이 조금 다릅니다.", nuance: "본사 의견에 무례하지 않고 건설적으로 반대 의견을 낼 때 최고입니다." },
+      { id: "gb-10", track: "husband", isSeed: true, createdAt: 2019, english: "The bottom line is that our Q2 results exceeded the target by 12%.", korean: "결론부터 말씀드리면, 2분기 실적이 목표치를 12% 초과 달성했습니다.", nuance: "외국계 보고에서 가장 선호하는 두괄식(Bottom Line Up Front) 표현입니다." },
+      { id: "gb-11", track: "husband", isSeed: true, createdAt: 2018, english: "Could you loop in the relevant owner on your team so we can get this moving?", korean: "진행이 될 수 있도록 그쪽 팀의 담당자분을 함께 연결해 주실 수 있을까요?", nuance: "유관 부서나 타 지사 담당자를 업무에 포함시킬 때 쓰는 실무 필수구입니다." },
+      { id: "gb-12", track: "husband", isSeed: true, createdAt: 2017, english: "Let's clarify the roles and responsibilities so nothing falls through the cracks.", korean: "누락되는 일이 없도록 역할과 책임(R&R)을 명확히 정리해 두시죠.", nuance: "지사·부서 간 업무 혼선을 비난 없이 깔끔하게 정리할 때 씁니다." },
+      { id: "gb-13", track: "husband", isSeed: true, createdAt: 2016, english: "I don't have the exact numbers off the top of my head, so I'll verify and get back to you.", korean: "정확한 수치가 지금 바로 떠오르지 않아 확인 후 곧바로 회신드리겠습니다.", nuance: "까다로운 즉석 Q&A에서 당황하지 않고 확인 시간을 버는 문장입니다." },
+      { id: "gb-14", track: "husband", isSeed: true, createdAt: 2015, english: "To wrap up, I'll circulate a brief summary with our agreed next steps.", korean: "마무리하자면, 합의된 다음 단계를 정리한 요약본을 곧 공유드리겠습니다.", nuance: "글로벌 미팅을 주도적으로 끝맺고 후속 혼선을 막는 정석 클로징입니다." },
+
+      // Wife: Mid-30s Daily & Travel English (14)
+      { id: "rl-1", track: "wife", isSeed: true, createdAt: 2014, english: "Is this your first time here, or are you a regular?", korean: "여기 처음 오신 거예요, 아니면 단골이세요?", nuance: "카페·와인바·클래스에서 어색함 없이 말을 거는 자연스러운 첫마디입니다." },
+      { id: "rl-2", track: "wife", isSeed: true, createdAt: 2013, english: "I've been really into Pilates lately—it's been a total lifesaver.", korean: "요즘 필라테스에 푹 빠졌어요—완전 구세주예요.", nuance: "근황 토크에서 취미를 생생하게 말하는 원어민 단골 패턴입니다." },
+      { id: "rl-3", track: "wife", isSeed: true, createdAt: 2012, english: "Would it be possible to get a quiet room on a higher floor?", korean: "혹시 고층의 조용한 방으로 배정받을 수 있을까요?", nuance: "호텔 체크인 시 정중하게 선호 조건을 요청할 때 최고입니다." },
+      { id: "rl-4", track: "wife", isSeed: true, createdAt: 2011, english: "Excuse me, I think there might be a small mix-up with our bill.", korean: "실례합니다, 계산서에 약간의 착오가 있는 것 같아서요.", nuance: "mistake보다 부드러우면서도 정확하게 오류를 짚는 표현입니다." },
+      { id: "rl-5", track: "wife", isSeed: true, createdAt: 2010, english: "We're running about 15 minutes behind—could you still hold our table?", korean: "15분 정도 늦을 것 같은데, 테이블을 계속 잡아주실 수 있을까요?", nuance: "예약 시간에 늦을 때 전화나 현장에서 바로 쓰는 필수 문장입니다." },
+      { id: "rl-6", track: "wife", isSeed: true, createdAt: 2009, english: "It was way better than I expected—definitely worth the hype.", korean: "기대했던 것보다 훨씬 좋았어요—소문날 만하더라고요.", nuance: "맛집·전시·여행지 후기를 나눌 때 세련된 리액션입니다." },
+      { id: "rl-7", track: "wife", isSeed: true, createdAt: 2008, english: "I'm looking for somewhere a bit off the beaten path, not too touristy.", korean: "관광객이 너무 많지 않고 좀 숨겨진 로컬 장소를 찾고 있어요.", nuance: "현지인에게 진짜 단골 맛집·카페를 추천받을 때 쓰는 명표현입니다." },
+      { id: "rl-8", track: "wife", isSeed: true, createdAt: 2007, english: "I've had a scratchy throat and a dull headache since yesterday.", korean: "어제부터 목이 칼칼하고 머리가 은은하게 계속 아파요.", nuance: "해외 약국·병원에서 증상을 정확히 전달하는 실전 표현입니다." },
+      { id: "rl-9", track: "wife", isSeed: true, createdAt: 2006, english: "Does this run small, or is it pretty true to size?", korean: "이 옷은 좀 작게 나온 편인가요, 아니면 정사이즈인가요?", nuance: "해외 편집숍·백화점 쇼핑에서 원어민이 100% 쓰는 표현입니다." },
+      { id: "rl-10", track: "wife", isSeed: true, createdAt: 2005, english: "Could I get an iced oat latte, light on the ice please?", korean: "아이스 오트 라떼로 주시고, 얼음은 적게 넣어주세요.", nuance: "light on the ~ 를 알면 어떤 음료·음식도 취향껏 커스텀할 수 있습니다." },
+      { id: "rl-11", track: "wife", isSeed: true, createdAt: 2004, english: "I totally see your point, though I actually lean the other way on that.", korean: "무슨 말씀인지 완전 이해해요. 근데 저는 조금 다른 편이에요.", nuance: "취향이나 의견이 다를 때 기분 상하지 않게 내 생각을 전합니다." },
+      { id: "rl-12", track: "wife", isSeed: true, createdAt: 2003, english: "Something came up, so could we take a rain check on dinner?", korean: "갑자기 일이 생겨서 저녁 약속은 다음으로 미뤄도 될까요?", nuance: "take a rain check은 '이번엔 어렵고 다음에 꼭 보자'는 세련된 거절입니다." },
+      { id: "rl-13", track: "wife", isSeed: true, createdAt: 2002, english: "To be honest, we ended up staying at the cafe for three hours just catching up.", korean: "솔직히 말하면, 밀린 수다를 떨다가 결국 카페에서 세 시간이나 있었어요.", nuance: "to be honest + end up -ing + catch up으로 자연스럽게 이야기를 잇습니다." },
+      { id: "rl-14", track: "wife", isSeed: true, createdAt: 2001, english: "You have such a great eye for detail—this place is gorgeous!", korean: "디테일을 보는 안목이 정말 대단하시네요—이 공간 너무 멋져요!", nuance: "상대방의 센스나 공간 취향을 세련되게 칭찬하는 표현입니다." }
+    ];
+
+    // =========================================================================
+    // 3. AI TUTOR PERSONAS & NUANCE EXAMPLES
+    // =========================================================================
+    const ROLEPLAY_PERSONAS = {
+      husband: [
+        {
+          id: "p-hq-mgr",
+          label: "글로벌 본사 매니저",
+          roleDesc: "유럽·미주 글로벌 본사의 프로젝트/팀 매니저. 간결한 두괄식 보고와 명확한 일정·우선순위 합의를 선호하며, 시차와 글로벌 표준을 기준으로 질문함.",
+          defaultTopic: "글로벌 본사 매니저와의 주간 현황 보고 미팅에서 한국 지사 진행 상황을 공유하고, 촉박한 추가 요청에 대해 현실적인 마감 일정을 재협상하는 상황"
+        },
+        {
+          id: "p-branch",
+          label: "해외 지사 협업 파트너",
+          roleDesc: "싱가포르·일본·유럽 등 타 지역 지사의 협업 담당자. 공동 프로젝트 진행 중 역할 분담(R&R), 자료 공유, 지역별 차이 조율을 실무적으로 협의함.",
+          defaultTopic: "해외 지사 협업 파트너와 공동 프로젝트의 역할 분담(R&R) 혼선을 깔끔히 정리하고 다음 주 산출물 공유 일정을 맞추는 상황"
+        },
+        {
+          id: "p-director",
+          label: "본사 시니어 리더",
+          roleDesc: "글로벌 본사의 디렉터급 의사결정권자. 핵심 결론(Bottom Line), 비즈니스 임팩트, 리스크 대응책을 중시하며 날카로운 Q&A를 던짐.",
+          defaultTopic: "본사 시니어 리더에게 한국 지사의 프로세스 개선 제안안을 설득하고, 예산·일정·현지 적용 리스크에 대한 까다로운 Q&A를 방어하는 상황"
+        }
+      ],
+      wife: [
+        {
+          id: "p-friend",
+          label: "친근한 원어민 친구",
+          roleDesc: "30대 중반의 따뜻하고 센스 있는 원어민 친구. 카페·브런치 테이블에서 일상, 취미, 영화, 여행 에피소드에 대해 자연스럽게 수다를 나눔.",
+          defaultTopic: "해외 감성 카페에서 만난 30대 원어민 친구와 요즘 근황, 취미, 최근 본 드라마와 여행 에피소드에 대해 자연스럽게 수다 떠는 상황"
+        },
+        {
+          id: "p-staff",
+          label: "현지 호텔·식당 스태프",
+          roleDesc: "해외 부티크 호텔 프런트 직원, 로컬 레스토랑 서버, 또는 편집숍·약국 직원. 정중하고 프로페셔널하게 요청·주문·교환·이슈를 응대함.",
+          defaultTopic: "해외 부티크 호텔 체크인 시 고층 조용한 방과 레이트 체크아웃을 정중히 요청하고, 계산서 착오나 예약 이슈를 침착하게 해결하는 상황"
+        },
+        {
+          id: "p-host",
+          label: "취향 모임 호스트",
+          roleDesc: "해외 소셜 모임·원데이 클래스의 호스트. 30대 참가자들이 편안하게 취향, 라이프스타일, 한국 문화에 대해 이야기하도록 흥미로운 질문을 던짐.",
+          defaultTopic: "해외 취향 모임에서 호스트와 좋아하는 카페 분위기, 주말 휴식 스타일, 한국 문화와 여행 취향에 대해 유쾌하게 대화하는 상황"
+        }
+      ]
+    };
+
+    const NUANCE_CHIPS = {
+      husband: [
+        {
+          title: "일정 조율 (Pushback)",
+          ko: "한국 지사 업무 여력상 이번 주까지 완료는 어렵고 다음 주 수요일에 공유드릴 수 있을 것 같습니다.",
+          en: "Because of Korea branch schedule, finishing this week is hard, so we can share next Wednesday."
+        },
+        {
+          title: "지연 리스크 조기 보고",
+          ko: "리스크를 줄이기 위해 예상치 못한 일정 지연 가능성을 미리 공유드리고 대응안을 말씀드리고 싶습니다.",
+          en: "To reduce risk, I want to tell you about possible delay early and share our solution."
+        },
+        {
+          title: "본사 제안에 부드럽게 반론",
+          ko: "본사 취지에는 공감하지만, 한국 시장 상황을 고려하면 파일럿으로 먼저 테스트해 보는 게 안전할 것 같습니다.",
+          en: "I agree with HQ's idea, but for Korea market, testing as a pilot first is more safe."
+        }
+      ],
+      wife: [
+        {
+          title: "호텔 체크인 요청",
+          ko: "가능하시면 고층의 조용한 방으로 배정받고, 오후 1시 레이트 체크아웃이 될까요?",
+          en: "If possible, can I get a quiet high floor room and 1 PM late check-out?"
+        },
+        {
+          title: "약속 정중히 미루기",
+          ko: "갑자기 급한 일이 생겨서 오늘 저녁 약속을 다음 주로 미뤄도 될까요?",
+          en: "Urgent thing happened, can we move dinner to next week?"
+        },
+        {
+          title: "맛집 후기 나누기",
+          ko: "기대했던 것보다 분위기가 훨씬 아늑하고 파스타가 전혀 느끼하지 않았어요.",
+          en: "The mood was cozy than I thought and pasta was not greasy."
+        }
+      ]
+    };
+
+    // =========================================================================
+    // 4. APPLICATION STATE (In-Memory + Firebase Firestore Real-Time Sync)
+    // =========================================================================
+    const state = {
+      activeUser: "husband", // 'husband' | 'wife'
+      activeTab: "home",     // 'home' | 'curriculum' | 'vocab' | 'tutor'
+      darkMode: false,
+      roomCode: "LOVE6M",
+      isFirebaseReady: false,
+      firebaseUser: null,
+      unsubscribers: [],
+
+      // Synced Room State
+      room: {
+        husbandName: "남편",
+        wifeName: "아내",
+        checks: {},
+        bookmarks: {}
+      },
+      logs: [],
+      expressions: [...STARTER_EXPRESSIONS],
+
+      // Curriculum UI State
+      curView: "mine", // 'mine' | 'partner'
+      expandedMonths: { 1: true },
+      expandedLessons: {},
+
+      // Vocab UI State
+      vocabMode: "list",    // 'list' | 'card'
+      vocabFilter: "mine",  // 'mine' | 'partner' | 'bookmark'
+      vocabSearch: "",
+      ttsRate: 1.0,
+      fcIndex: 0,
+      fcFlipped: false,
+
+      // Bottom Sheet States
+      selectedVocabTrack: "husband",
+
+      // AI Tutor State
+      guideOpen: false,
+      tutorMode: "roleplay", // 'roleplay' | 'nuance' | 'eval'
+      tutorDifficulty: "중급", // '초급' | '중급' | '실전'
+      selectedPersonaIdx: 0,
+      tutorEvalMonth: 1,
+      linkedMilestone: null
+    };
+
+    let db = null;
+    let auth = null;
+    const appId = typeof __app_id !== "undefined" ? __app_id : "our-english-6m-app";
+
+    // =========================================================================
+    // 5. HELPERS
+    // =========================================================================
+    function getTodayISO() {
+      const now = new Date();
+      return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0];
+    }
+
+    function getUserName(role) {
+      return role === "husband" ? state.room.husbandName : state.room.wifeName;
+    }
+
+    function getPartnerRole(role) {
+      return role === "husband" ? "wife" : "husband";
+    }
+
+    function escapeHTML(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatRelativeTime(ts) {
+      if (!ts) return "방금 전";
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 60) return "방금 전";
+      if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+      return `${Math.floor(diff / 86400)}일 전`;
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      el.className = "pointer-events-auto px-4 py-2.5 rounded-full bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] text-[13px] font-bold shadow-lg transition-all duration-200 transform -translate-y-2 opacity-0";
+      el.textContent = msg;
+      container.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove("-translate-y-2", "opacity-0"));
+      setTimeout(() => {
+        el.classList.add("-translate-y-2", "opacity-0");
+        setTimeout(() => el.remove(), 220);
+      }, 2200);
+    }
+
+    function copyText(text, toastMsg) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast(toastMsg || "클립보드에 복사되었습니다");
+      } catch (e) {
+        showToast("복사에 실패했습니다");
+      }
+      document.body.removeChild(ta);
+    }
+
+    function speakText(text) {
+      if (!("speechSynthesis" in window)) {
+        showToast("이 브라우저에서는 음성 재생을 지원하지 않습니다");
+        return;
+      }
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = "en-US";
+        utter.rate = state.ttsRate;
+        window.speechSynthesis.speak(utter);
+      } catch (err) {
+        console.error("TTS Error:", err);
+      }
+    }
+
+    function getCompletedCount(role) {
+      let count = 0;
+      CURRICULUM[role].forEach((m) => {
+        m.items.forEach((it) => {
+          if (state.room.checks[it.id]) count++;
+        });
+      });
+      return count;
+    }
+
+    function getCurrentMonthBadge(role) {
+      for (const m of CURRICULUM[role]) {
+        const allDone = m.items.every((it) => !!state.room.checks[it.id]);
+        if (!allDone) return `${m.month}개월 차`;
+      }
+      return "6개월 완주";
+    }
+
+    function getNextUncompletedMilestone(role) {
+      for (const m of CURRICULUM[role]) {
+        for (const it of m.items) {
+          if (!state.room.checks[it.id]) {
+            return { ...it, month: m.month, theme: m.theme };
+          }
+        }
+      }
+      return null;
+    }
+
+    function getStreakDays(role) {
+      const dateSet = new Set(state.logs.filter((l) => l.user === role && l.date).map((l) => l.date));
+      if (dateSet.size === 0) return 0;
+      const now = new Date();
+      let cur = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+      let iso = cur.toISOString().split("T")[0];
+      if (!dateSet.has(iso)) {
+        cur.setDate(cur.getDate() - 1);
+        iso = cur.toISOString().split("T")[0];
+        if (!dateSet.has(iso)) return 0;
+      }
+      let streak = 0;
+      while (dateSet.has(iso)) {
+        streak++;
+        cur.setDate(cur.getDate() - 1);
+        iso = cur.toISOString().split("T")[0];
+      }
+      return streak;
+    }
+
+    function isBookmarked(exprId) {
+      const key = `${state.activeUser}_${exprId}`;
+      return !!state.room.bookmarks[key];
+    }
+
+    function getFilteredExpressions() {
+      const q = state.vocabSearch.trim().toLowerCase();
+      const myRole = state.activeUser;
+      const partnerRole = getPartnerRole(myRole);
+
+      return state.expressions.filter((e) => {
+        let matchFilter = true;
+        if (state.vocabFilter === "mine") matchFilter = e.track === myRole;
+        else if (state.vocabFilter === "partner") matchFilter = e.track === partnerRole;
+        else if (state.vocabFilter === "bookmark") matchFilter = isBookmarked(e.id);
+
+        if (!matchFilter) return false;
+        if (!q) return true;
+        return (
+          (e.english && e.english.toLowerCase().includes(q)) ||
+          (e.korean && e.korean.toLowerCase().includes(q)) ||
+          (e.nuance && e.nuance.toLowerCase().includes(q))
+        );
+      });
+    }
+
+    function findMilestoneById(role, id) {
+      for (const m of CURRICULUM[role]) {
+        for (const it of m.items) {
+          if (it.id === id) return { ...it, month: m.month, theme: m.theme };
+        }
+      }
+      return null;
+    }
+
+    // =========================================================================
+    // 6. FIREBASE REAL-TIME SYNC (STRICT RULES 1, 2, 3 + IN-MEMORY FALLBACK)
+    // =========================================================================
+    function updateSyncIndicator(connected) {
+      const dot = document.getElementById("sync-dot");
+      const label = document.getElementById("header-room-code");
+      label.textContent = state.roomCode;
+      dot.className = connected
+        ? "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-soft-pulse"
+        : "w-1.5 h-1.5 rounded-full bg-amber-400";
+    }
+
+    async function initFirebase() {
+      try {
+        if (typeof __firebase_config === "undefined" || !__firebase_config) {
+          updateSyncIndicator(false);
+          renderAll();
+          return;
+        }
+        const config = JSON.parse(__firebase_config);
+        const app = initializeApp(config);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // RULE 3: Authenticate BEFORE any Firestore query
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          state.firebaseUser = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          state.firebaseUser = cred.user;
+        }
+
+        state.isFirebaseReady = true;
+        updateSyncIndicator(true);
+        subscribeToRoom();
+      } catch (err) {
+        console.error("Firebase init fallback to in-memory:", err);
+        updateSyncIndicator(false);
+        renderAll();
+      }
+    }
+
+    function subscribeToRoom() {
+      if (!state.firebaseUser || !db) return;
+
+      state.unsubscribers.forEach((unsub) => {
+        try { unsub(); } catch (e) {}
+      });
+      state.unsubscribers = [];
+
+      const rc = state.roomCode;
+
+      // 1. Room document (RULE 1 path)
+      const roomRef = doc(db, "artifacts", appId, "public", "data", "rooms", rc);
+      state.unsubscribers.push(
+        onSnapshot(
+          roomRef,
+          (snap) => {
+            if (snap.exists()) {
+              const d = snap.data();
+              state.room = {
+                husbandName: d.husbandName || "남편",
+                wifeName: d.wifeName || "아내",
+                checks: d.checks || {},
+                bookmarks: d.bookmarks || {}
+              };
+            } else {
+              setDoc(roomRef, state.room, { merge: true }).catch((e) => console.error(e));
+            }
+            renderAll();
+          },
+          (err) => console.error("Room snapshot error:", err)
+        )
+      );
+
+      // 2. Shared Study Logs (RULE 2: simple collection, filter/sort in JS)
+      const logsCol = collection(db, "artifacts", appId, "public", "data", "study_logs");
+      state.unsubscribers.push(
+        onSnapshot(
+          logsCol,
+          (snap) => {
+            const arr = [];
+            snap.forEach((d) => {
+              const data = d.data();
+              if (data.roomCode === rc) arr.push({ id: d.id, ...data });
+            });
+            arr.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            state.logs = arr;
+            renderAll();
+          },
+          (err) => console.error("Logs snapshot error:", err)
+        )
+      );
+
+      // 3. Shared Custom Expressions
+      const exprCol = collection(db, "artifacts", appId, "public", "data", "expressions");
+      state.unsubscribers.push(
+        onSnapshot(
+          exprCol,
+          (snap) => {
+            const custom = [];
+            snap.forEach((d) => {
+              const data = d.data();
+              if (data.roomCode === rc) custom.push({ id: d.id, ...data });
+            });
+            custom.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            state.expressions = [...custom, ...STARTER_EXPRESSIONS];
+            renderAll();
+          },
+          (err) => console.error("Expressions snapshot error:", err)
+        )
+      );
+    }
+
+    // =========================================================================
+    // 7. DATA MUTATIONS
+    // =========================================================================
+    async function saveSyncSettings(newCode, hName, wName) {
+      const cleanCode = newCode.toUpperCase().replace(/[^A-Z0-9가-힣_-]/g, "").trim() || "LOVE6M";
+      const changed = cleanCode !== state.roomCode;
+      state.roomCode = cleanCode;
+      state.room.husbandName = hName;
+      state.room.wifeName = wName;
+
+      if (state.isFirebaseReady && state.firebaseUser) {
+        const ref = doc(db, "artifacts", appId, "public", "data", "rooms", state.roomCode);
+        await setDoc(ref, { husbandName: hName, wifeName: wName }, { merge: true });
+        if (changed) subscribeToRoom();
+      }
+      updateSyncIndicator(state.isFirebaseReady);
+      renderAll();
+      showToast(`방 코드 [${state.roomCode}] 연결 완료`);
+    }
+
+    async function toggleMilestoneCheck(checkKey) {
+      const nextVal = !state.room.checks[checkKey];
+      state.room.checks[checkKey] = nextVal;
+
+      if (state.isFirebaseReady && state.firebaseUser) {
+        const ref = doc(db, "artifacts", appId, "public", "data", "rooms", state.roomCode);
+        await setDoc(ref, { checks: { [checkKey]: nextVal } }, { merge: true });
+      } else {
+        renderAll();
+      }
+      if (nextVal) showToast("마일스톤 완료! 꾸준히 잘하고 계세요");
+    }
+
+    async function toggleBookmark(exprId) {
+      const key = `${state.activeUser}_${exprId}`;
+      const nextVal = !state.room.bookmarks[key];
+      state.room.bookmarks[key] = nextVal;
+
+      if (state.isFirebaseReady && state.firebaseUser) {
+        const ref = doc(db, "artifacts", appId, "public", "data", "rooms", state.roomCode);
+        await setDoc(ref, { bookmarks: { [key]: nextVal } }, { merge: true });
+      } else {
+        renderAll();
+      }
+      showToast(nextVal ? "북마크(★)에 저장했습니다" : "북마크를 해제했습니다");
+    }
+
+    async function addStudyLog(memo, phrase, scoreVal) {
+      const scoreText = scoreVal !== "" && !isNaN(Number(scoreVal)) ? `AI 튜터 ${Number(scoreVal).toFixed(1)} / 5.0` : "";
+      const payload = {
+        roomCode: state.roomCode,
+        user: state.activeUser,
+        date: getTodayISO(),
+        memo,
+        bestPhrase: phrase || "",
+        scoreNote: scoreText,
+        likedByHusband: false,
+        likedByWife: false,
+        createdAt: Date.now()
+      };
+
+      if (state.isFirebaseReady && state.firebaseUser) {
+        await addDoc(collection(db, "artifacts", appId, "public", "data", "study_logs"), payload);
+      } else {
+        state.logs.unshift({ id: crypto.randomUUID(), ...payload });
+        renderAll();
+      }
+      showToast("오늘의 한 줄 기록이 공유되었습니다");
+    }
+
+    async function toggleLogHeart(logId) {
+      const log = state.logs.find((l) => l.id === logId);
+      if (!log) return;
+      const field = state.activeUser === "husband" ? "likedByHusband" : "likedByWife";
+      const nextVal = !log[field];
+      log[field] = nextVal;
+
+      if (state.isFirebaseReady && state.firebaseUser) {
+        await updateDoc(doc(db, "artifacts", appId, "public", "data", "study_logs", logId), {
+          [field]: nextVal
+        });
+      } else {
+        renderAll();
+      }
+    }
+
+    async function removeStudyLog(logId) {
+      if (state.isFirebaseReady && state.firebaseUser) {
+        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "study_logs", logId));
+      } else {
+        state.logs = state.logs.filter((l) => l.id !== logId);
+        renderAll();
+      }
+      showToast("기록을 삭제했습니다");
+    }
+
+    async function addCustomExpression(track, english, korean, nuance) {
+      const payload = {
+        roomCode: state.roomCode,
+        user: state.activeUser,
+        track,
+        english,
+        korean,
+        nuance: nuance || "",
+        isSeed: false,
+        createdAt: Date.now()
+      };
+
+      if (state.isFirebaseReady && state.firebaseUser) {
+        await addDoc(collection(db, "artifacts", appId, "public", "data", "expressions"), payload);
+      } else {
+        state.expressions.unshift({ id: crypto.randomUUID(), ...payload });
+        renderAll();
+      }
+      showToast("표현장에 추가되었습니다");
+    }
+
+    async function removeCustomExpression(id) {
+      if (state.isFirebaseReady && state.firebaseUser) {
+        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "expressions", id));
+      } else {
+        state.expressions = state.expressions.filter((e) => e.id !== id);
+        renderAll();
+      }
+      showToast("표현을 삭제했습니다");
+    }
+
+    // =========================================================================
+    // 8. RENDER FUNCTIONS
+    // =========================================================================
+    function renderAll() {
+      renderHeader();
+      renderHomeTab();
+      renderCurriculumTab();
+      renderVocabTab();
+      renderTutorTab();
+    }
+
+    function renderHeader() {
+      const hName = state.room.husbandName;
+      const wName = state.room.wifeName;
+
+      document.querySelectorAll(".husband-name-text").forEach((el) => (el.textContent = hName));
+      document.querySelectorAll(".wife-name-text").forEach((el) => (el.textContent = wName));
+
+      const btnH = document.getElementById("switch-husband");
+      const btnW = document.getElementById("switch-wife");
+      if (state.activeUser === "husband") {
+        btnH.className = "min-h-[34px] px-3 rounded-full text-[12px] font-bold transition flex items-center bg-white dark:bg-[#2F3748] text-indigo-700 dark:text-indigo-300 shadow-xs";
+        btnW.className = "min-h-[34px] px-3 rounded-full text-[12px] font-semibold transition flex items-center text-[#727C8C] dark:text-[#98A2B3]";
+      } else {
+        btnW.className = "min-h-[34px] px-3 rounded-full text-[12px] font-bold transition flex items-center bg-white dark:bg-[#2F3748] text-emerald-700 dark:text-emerald-300 shadow-xs";
+        btnH.className = "min-h-[34px] px-3 rounded-full text-[12px] font-semibold transition flex items-center text-[#727C8C] dark:text-[#98A2B3]";
+      }
+    }
+
+    function renderHomeTab() {
+      ["husband", "wife"].forEach((role) => {
+        const done = getCompletedCount(role);
+        const pct = Math.round((done / TOTAL_MILESTONES) * 100);
+        const streak = getStreakDays(role);
+        const badge = getCurrentMonthBadge(role);
+
+        document.getElementById(`home-${role}-month-badge`).textContent = badge;
+        document.getElementById(`home-${role}-pct`).textContent = `${pct}%`;
+        document.getElementById(`home-${role}-count`).textContent = `${done} / ${TOTAL_MILESTONES}`;
+        document.getElementById(`home-${role}-bar`).style.width = `${pct}%`;
+        document.getElementById(`home-${role}-streak`).textContent = streak;
+      });
+
+      // Today's Next Step Card
+      const nextStepEl = document.getElementById("next-step-card");
+      const nextItem = getNextUncompletedMilestone(state.activeUser);
+      const isBiz = state.activeUser === "husband";
+
+      if (!nextItem) {
+        nextStepEl.innerHTML = `
+          <div>
+            <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">6개월 완주</span>
+            <p class="text-[15px] font-bold text-[#1E2430] dark:text-white mt-0.5">${escapeHTML(getUserName(state.activeUser))}님, 24개 마일스톤을 모두 완료했습니다!</p>
+          </div>
+        `;
+      } else {
+        const pillCls = isBiz
+          ? "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300"
+          : "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300";
+
+        nextStepEl.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[12px] font-bold text-[#647082] dark:text-[#9CA6B8]">오늘의 다음 스텝</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${pillCls}">${nextItem.month}개월 차</span>
+          </div>
+          <div>
+            <p class="text-[15px] font-bold text-[#1E2430] dark:text-white leading-snug">${escapeHTML(nextItem.title)}</p>
+            <p class="text-[12.5px] text-[#647082] dark:text-[#9CA6B8] mt-1 leading-relaxed">${escapeHTML(nextItem.scenario)}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <button type="button" data-next-tutor="${nextItem.id}" class="next-tutor-btn min-h-[42px] px-3 rounded-xl bg-[#F1F0EC] dark:bg-[#222834] text-[#1E2430] dark:text-white text-[12.5px] font-bold active:scale-95 transition">
+              AI 튜터로 연습
+            </button>
+            <button type="button" data-next-done="${nextItem.id}" class="next-done-btn min-h-[42px] px-3 rounded-xl ${isBiz ? "bg-indigo-600 dark:bg-indigo-500" : "bg-emerald-600 dark:bg-emerald-500"} text-white text-[12.5px] font-bold active:scale-95 transition">
+              완료 체크
+            </button>
+          </div>
+        `;
+      }
+
+      // Shared Study Log Feed
+      document.getElementById("feed-count-label").textContent = `${state.logs.length}건`;
+      const feedEl = document.getElementById("home-feed-list");
+
+      if (state.logs.length === 0) {
+        feedEl.innerHTML = `
+          <div class="bg-white dark:bg-[#161A22] rounded-[24px] py-12 px-5 text-center border border-[#E6E4DE] dark:border-[#242A36]">
+            <p class="text-[15px] font-bold text-[#374151] dark:text-[#E5E7EB] mb-1">아직 공유된 기록이 없어요</p>
+            <p class="text-[13px] text-[#858E9C]">출퇴근길 10분만 연습해도 한 줄 기록을 남겨보세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      feedEl.innerHTML = state.logs
+        .map((log) => {
+          const isH = log.user === "husband";
+          const likesCount = (log.likedByHusband ? 1 : 0) + (log.likedByWife ? 1 : 0);
+          const iLiked = state.activeUser === "husband" ? !!log.likedByHusband : !!log.likedByWife;
+          const isMine = log.user === state.activeUser;
+
+          const badgeCls = isH
+            ? "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300"
+            : "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300";
+
+          return `
+            <article class="bg-white dark:bg-[#161A22] rounded-[22px] p-4 border border-[#E6E4DE] dark:border-[#242A36] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-2 h-2 rounded-full shrink-0 ${isH ? "bg-indigo-600 dark:bg-indigo-400" : "bg-emerald-600 dark:bg-emerald-400"}"></span>
+                  <span class="text-[14px] font-bold text-[#1E2430] dark:text-white truncate">${escapeHTML(getUserName(log.user))}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${badgeCls}">${isH ? "글로벌 비즈" : "실생활 회화"}</span>
+                </div>
+                <span class="text-[11px] text-[#9CA3AF] shrink-0">${log.date ? log.date.slice(5) : ""} · ${formatRelativeTime(log.createdAt)}</span>
+              </div>
+
+              <p class="text-[14.5px] text-[#2D333D] dark:text-[#E5E7EB] leading-relaxed whitespace-pre-wrap">${escapeHTML(log.memo)}</p>
+
+              ${
+                log.bestPhrase
+                  ? `<div class="mt-2.5 px-3 py-2 rounded-xl bg-[#F5F5F2] dark:bg-[#1E232E] text-[13px] text-[#374151] dark:text-[#D1D5DB]">
+                      <span class="text-[11px] font-bold text-[#647082] dark:text-[#9CA6B8] block mb-0.5">오늘의 베스트 표현</span>
+                      <span class="font-semibold">${escapeHTML(log.bestPhrase)}</span>
+                    </div>`
+                  : ""
+              }
+
+              ${
+                log.scoreNote
+                  ? `<p class="mt-2 text-[12px] font-semibold text-emerald-700 dark:text-emerald-400">${escapeHTML(log.scoreNote)}</p>`
+                  : ""
+              }
+
+              <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-[#F0EFEA] dark:border-[#242A36]">
+                <button type="button" data-like-id="${log.id}" class="feed-heart-btn min-h-[36px] px-3 rounded-full text-[13px] font-semibold flex items-center gap-1.5 active:scale-95 transition ${
+                  iLiked
+                    ? "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300"
+                    : "bg-[#F5F5F2] dark:bg-[#202530] text-[#647082] dark:text-[#9CA6B8]"
+                }">
+                  <span>${iLiked ? "❤️" : "🤍"}</span>
+                  <span>좋아요${likesCount > 0 ? ` ${likesCount}` : ""}</span>
+                </button>
+
+                ${
+                  isMine
+                    ? `<button type="button" data-del-log="${log.id}" class="feed-del-btn min-h-[36px] px-2.5 text-[12px] font-medium text-[#9CA3AF] hover:text-rose-500 transition">삭제</button>`
+                    : ""
+                }
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    function renderCurriculumTab() {
+      const viewingRole = state.curView === "mine" ? state.activeUser : getPartnerRole(state.activeUser);
+      const isReadOnly = state.curView === "partner";
+      const isBiz = viewingRole === "husband";
+      const trackName = isBiz ? "글로벌 비즈 (본사·지사 소통)" : "실생활·여행 회화";
+
+      document.getElementById("cur-view-mine").className = !isReadOnly
+        ? "min-h-[42px] rounded-xl text-[12.5px] font-bold transition bg-white dark:bg-[#222834] text-[#1E2430] dark:text-white shadow-xs"
+        : "min-h-[42px] rounded-xl text-[12.5px] font-semibold transition text-[#727C8C] dark:text-[#98A2B3]";
+
+      document.getElementById("cur-view-partner").className = isReadOnly
+        ? "min-h-[42px] rounded-xl text-[12.5px] font-bold transition bg-white dark:bg-[#222834] text-[#1E2430] dark:text-white shadow-xs"
+        : "min-h-[42px] rounded-xl text-[12.5px] font-semibold transition text-[#727C8C] dark:text-[#98A2B3]";
+
+      const doneCount = getCompletedCount(viewingRole);
+      document.getElementById("cur-track-banner").innerHTML = `
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="font-bold text-[#1E2430] dark:text-white truncate">${escapeHTML(getUserName(viewingRole))} · ${trackName}</span>
+        </div>
+        <span class="font-bold shrink-0 ${isBiz ? "text-indigo-700 dark:text-indigo-300" : "text-emerald-700 dark:text-emerald-300"}">${doneCount} / ${TOTAL_MILESTONES}</span>
+      `;
+
+      const accentText = isBiz ? "text-indigo-700 dark:text-indigo-300" : "text-emerald-700 dark:text-emerald-300";
+      const accentCheck = isBiz ? "bg-indigo-600 dark:bg-indigo-500 border-indigo-600 dark:border-indigo-500" : "bg-emerald-600 dark:bg-emerald-500 border-emerald-600 dark:border-emerald-500";
+
+      const listEl = document.getElementById("curriculum-list");
+      listEl.innerHTML = CURRICULUM[viewingRole]
+        .map((m) => {
+          const monthDone = m.items.filter((it) => !!state.room.checks[it.id]).length;
+          const isMonthOpen = !!state.expandedMonths[m.month];
+
+          return `
+            <div class="bg-white dark:bg-[#161A22] rounded-[24px] border border-[#E6E4DE] dark:border-[#242A36] shadow-[0_1px_2px_rgba(0,0,0,0.02)] overflow-hidden">
+              <button type="button" data-month-acc="${m.month}" class="cur-acc-btn w-full px-5 py-4 flex items-center justify-between gap-3 text-left active:bg-[#F8F8F5] dark:active:bg-[#1C212C] transition">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-[12px] font-bold ${accentText}">${m.month}개월 차</span>
+                    <span class="text-[12px] font-semibold text-[#858E9C]">${monthDone}/4 완료</span>
+                  </div>
+                  <h3 class="text-[15px] font-bold text-[#1E2430] dark:text-white leading-snug">${m.theme}</h3>
+                </div>
+                <svg class="w-5 h-5 text-[#9CA3AF] shrink-0 transition-transform duration-200 ${isMonthOpen ? "rotate-180" : ""}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+
+              <div class="${isMonthOpen ? "block" : "hidden"} px-3.5 pb-4 pt-1 space-y-2.5 border-t border-[#F0EFEA] dark:border-[#242A36]">
+                ${m.items
+                  .map((it, idx) => {
+                    const checked = !!state.room.checks[it.id];
+                    const isLessonOpen = !!state.expandedLessons[it.id];
+                    const cardBg = it.isMission
+                      ? "bg-[#EEF6F1]/90 dark:bg-[#15241D]/90 border border-[#D1E7DA] dark:border-[#244033]"
+                      : "bg-[#F7F7F4] dark:bg-[#1C212C] border border-transparent";
+                    const checkBg = it.isMission
+                      ? "bg-emerald-600 border-emerald-600"
+                      : accentCheck;
+
+                    return `
+                      <div class="rounded-2xl overflow-hidden ${cardBg}">
+                        <!-- Milestone Header Row -->
+                        <div class="flex items-center gap-2 px-3.5 py-3">
+                          <button type="button" data-lesson-toggle="${it.id}" class="lesson-toggle-btn flex-1 flex items-start gap-2.5 text-left min-w-0">
+                            <span class="text-[11px] font-bold mt-0.5 shrink-0 ${it.isMission ? "text-emerald-700 dark:text-emerald-400" : "text-[#858E9C]"}">${it.isMission ? "AI" : `0${idx + 1}`}</span>
+                            <div class="min-w-0 flex-1">
+                              <p class="text-[14px] leading-snug ${checked ? "line-through text-[#9CA3AF]" : "font-bold text-[#1E2430] dark:text-[#EDF0F6]"}">${escapeHTML(it.title)}</p>
+                              <span class="text-[11px] font-medium text-[#858E9C] inline-flex items-center gap-1 mt-0.5">
+                                ${isLessonOpen ? "미니 가이드 접기 ▲" : "시나리오 · 핵심 표현 보기 ▼"}
+                              </span>
+                            </div>
+                          </button>
+
+                          <!-- Checkbox -->
+                          <button type="button" ${isReadOnly ? "disabled" : `data-check-key="${it.id}"`} aria-label="완료 체크" class="cur-check-item w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 transition ${
+                            isReadOnly ? "opacity-60 cursor-default" : "active:scale-90"
+                          } ${checked ? `${checkBg} text-white` : "border-[#CFD3DC] dark:border-[#3D4659] bg-white dark:bg-[#161A22] text-transparent"}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                          </button>
+                        </div>
+
+                        <!-- Expandable Mini Study Guide -->
+                        <div class="${isLessonOpen ? "block" : "hidden"} px-3.5 pb-3.5 pt-2 border-t border-black/5 dark:border-white/5 space-y-3">
+                          <div>
+                            <span class="text-[11px] font-bold text-[#647082] dark:text-[#9CA6B8] block mb-1">실전 시나리오</span>
+                            <p class="text-[13px] text-[#374151] dark:text-[#D1D5DB] leading-relaxed">${escapeHTML(it.scenario)}</p>
+                          </div>
+
+                          <div class="space-y-2">
+                            <span class="text-[11px] font-bold text-[#647082] dark:text-[#9CA6B8] block">원어민 핵심 표현</span>
+                            ${it.targets
+                              .map(
+                                (t) => `
+                              <div class="p-3 rounded-xl bg-white dark:bg-[#161A22] border border-[#E6E4DE]/80 dark:border-[#2A3140] space-y-1">
+                                <div class="flex items-start justify-between gap-2">
+                                  <p class="text-[13.5px] font-bold text-[#1E2430] dark:text-white leading-snug">${escapeHTML(t.en)}</p>
+                                  <button type="button" data-speak-text="${escapeHTML(t.en)}" aria-label="발음 듣기" class="cur-speak-btn w-8 h-8 rounded-lg bg-[#F1F0EC] dark:bg-[#222834] flex items-center justify-center text-sm shrink-0 active:scale-90 transition">🔊</button>
+                                </div>
+                                <p class="text-[12.5px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">${escapeHTML(t.ko)}</p>
+                                <p class="text-[11.5px] text-[#727C8C] dark:text-[#98A2B3]">${escapeHTML(t.tip)}</p>
+                              </div>
+                            `
+                              )
+                              .join("")}
+                          </div>
+
+                          ${
+                            !isReadOnly
+                              ? `<button type="button" data-launch-tutor="${it.id}" class="launch-tutor-btn w-full min-h-[44px] px-4 rounded-xl bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] text-[13px] font-bold active:scale-[0.98] transition flex items-center justify-center gap-1.5">
+                                  <span>[이 주제로 AI 튜터 프롬프트 열기]</span>
+                                </button>`
+                              : ""
+                          }
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join("")}
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderVocabTab() {
+      const isList = state.vocabMode === "list";
+
+      document.getElementById("vocab-mode-list").className = isList
+        ? "min-h-[40px] rounded-xl text-[13px] font-bold transition bg-white dark:bg-[#222834] text-[#1E2430] dark:text-white shadow-xs"
+        : "min-h-[40px] rounded-xl text-[13px] font-semibold transition text-[#727C8C] dark:text-[#98A2B3]";
+
+      document.getElementById("vocab-mode-card").className = !isList
+        ? "min-h-[40px] rounded-xl text-[13px] font-bold transition bg-white dark:bg-[#222834] text-[#1E2430] dark:text-white shadow-xs"
+        : "min-h-[40px] rounded-xl text-[13px] font-semibold transition text-[#727C8C] dark:text-[#98A2B3]";
+
+      document.getElementById("tts-speed-btn").textContent = `🔊 ${state.ttsRate.toFixed(1)}x`;
+
+      const filters = [
+        { key: "mine", label: "내 트랙" },
+        { key: "partner", label: "배우자 트랙" },
+        { key: "bookmark", label: "★ 북마크" }
+      ];
+      document.getElementById("vocab-filter-pills").innerHTML = filters
+        .map((f) => {
+          const active = f.key === state.vocabFilter;
+          return `
+            <button type="button" data-vfilter="${f.key}" class="vfilter-btn shrink-0 min-h-[36px] px-4 rounded-full text-[13px] font-bold transition active:scale-95 ${
+              active
+                ? "bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22]"
+                : "bg-white dark:bg-[#161A22] text-[#566070] dark:text-[#D1D5DB] border border-[#E5E3DC] dark:border-[#242A36]"
+            }">${f.label}</button>
+          `;
+        })
+        .join("");
+
+      document.getElementById("vocab-list-container").classList.toggle("hidden", !isList);
+      document.getElementById("vocab-card-container").classList.toggle("hidden", isList);
+
+      const items = getFilteredExpressions();
+      const listEl = document.getElementById("vocab-list-container");
+
+      if (items.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white dark:bg-[#161A22] rounded-[24px] py-12 px-5 text-center border border-[#E6E4DE] dark:border-[#242A36]">
+            <p class="text-[14px] font-bold text-[#374151] dark:text-[#E5E7EB] mb-1">표시할 표현이 없습니다</p>
+            <p class="text-[12.5px] text-[#858E9C]">검색어를 바꾸거나 별표(★)로 자주 쓰는 표현을 북마크해 보세요.</p>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = items
+          .map((item) => {
+            const isBiz = item.track === "husband";
+            const badgeStyle = isBiz
+              ? "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300"
+              : "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300";
+            const starred = isBookmarked(item.id);
+
+            return `
+              <div class="bg-white dark:bg-[#161A22] rounded-[22px] p-4 border border-[#E6E4DE] dark:border-[#242A36] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                <div class="flex items-start justify-between gap-2.5">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeStyle}">${isBiz ? "글로벌 비즈" : "실생활 회화"}</span>
+                      ${!item.isSeed ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">직접 추가</span>` : ""}
+                      ${!item.isSeed ? `<button type="button" data-del-vocab="${item.id}" class="del-vocab-btn text-[11px] text-[#9CA3AF] hover:text-rose-500">삭제</button>` : ""}
+                    </div>
+                    <p class="text-[15.5px] font-bold text-[#1E2430] dark:text-white leading-snug mb-1.5">${escapeHTML(item.english)}</p>
+                    <p class="text-[13.5px] font-medium text-[#4B5563] dark:text-[#D1D5DB]">${escapeHTML(item.korean)}</p>
+                  </div>
+
+                  <div class="flex flex-col gap-1.5 shrink-0">
+                    <button type="button" data-speak-text="${escapeHTML(item.english)}" aria-label="발음 듣기" class="vocab-speak-btn w-[42px] h-[42px] rounded-2xl bg-[#F5F5F2] dark:bg-[#222834] text-[#374151] dark:text-[#E5E7EB] flex items-center justify-center text-base active:scale-90 transition">
+                      🔊
+                    </button>
+                    <button type="button" data-bookmark-id="${item.id}" aria-label="북마크" class="vocab-star-btn w-[42px] h-[36px] rounded-xl bg-[#F5F5F2] dark:bg-[#222834] flex items-center justify-center text-base active:scale-90 transition ${
+                      starred ? "text-amber-500" : "text-[#B4BAC4] dark:text-[#566070]"
+                    }">
+                      ${starred ? "★" : "☆"}
+                    </button>
+                  </div>
+                </div>
+                ${
+                  item.nuance
+                    ? `<p class="mt-3 pt-2.5 border-t border-[#F0EFEA] dark:border-[#242A36] text-[12px] text-[#647082] dark:text-[#9CA6B8] leading-relaxed">${escapeHTML(item.nuance)}</p>`
+                    : ""
+                }
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (!isList) {
+        if (items.length === 0) {
+          document.getElementById("fc-counter").textContent = "0 / 0";
+          document.getElementById("fc-ko").textContent = "표시할 표현이 없습니다";
+          document.getElementById("fc-en").textContent = "-";
+          document.getElementById("fc-nuance").textContent = "";
+          return;
+        }
+        if (state.fcIndex >= items.length) state.fcIndex = 0;
+        if (state.fcIndex < 0) state.fcIndex = items.length - 1;
+
+        const card = items[state.fcIndex];
+        document.getElementById("fc-counter").textContent = `${state.fcIndex + 1} / ${items.length}`;
+        document.getElementById("fc-tag").textContent = card.track === "husband" ? "글로벌 비즈" : "실생활 회화";
+        document.getElementById("fc-ko").textContent = card.korean;
+        document.getElementById("fc-en").textContent = card.english;
+        document.getElementById("fc-nuance").textContent = card.nuance || "소리 내어 3번 따라 말해 보세요.";
+        document.getElementById("fc-inner").classList.toggle("rotate-y-180", state.fcFlipped);
+      }
+    }
+
+    function renderTutorTab() {
+      const isBiz = state.activeUser === "husband";
+
+      document.getElementById("guide-content").classList.toggle("hidden", !state.guideOpen);
+      document.getElementById("guide-chevron").classList.toggle("rotate-180", state.guideOpen);
+
+      const badge = document.getElementById("tutor-track-badge");
+      badge.textContent = isBiz ? "글로벌 비즈 트랙" : "실생활 회화 트랙";
+      badge.className = isBiz
+        ? "text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300"
+        : "text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300";
+
+      document.querySelectorAll(".tmode-btn").forEach((btn) => {
+        const active = btn.dataset.tmode === state.tutorMode;
+        btn.className = active
+          ? "tmode-btn min-h-[42px] px-1 rounded-xl text-[12px] font-bold transition bg-white dark:bg-[#222834] text-[#1E2430] dark:text-white shadow-xs"
+          : "tmode-btn min-h-[42px] px-1 rounded-xl text-[12px] font-semibold transition text-[#727C8C] dark:text-[#98A2B3]";
+      });
+
+      const linkedBanner = document.getElementById("tutor-linked-banner");
+      if (state.linkedMilestone && state.tutorMode === "roleplay") {
+        linkedBanner.classList.remove("hidden");
+        linkedBanner.classList.add("flex");
+        document.getElementById("tutor-linked-label").textContent = `연동됨: ${state.linkedMilestone.month}개월 차 · ${state.linkedMilestone.title}`;
+      } else {
+        linkedBanner.classList.add("hidden");
+        linkedBanner.classList.remove("flex");
+      }
+
+      document.getElementById("tutor-ctrl-roleplay").classList.toggle("hidden", state.tutorMode !== "roleplay");
+      document.getElementById("tutor-ctrl-nuance").classList.toggle("hidden", state.tutorMode !== "nuance");
+      document.getElementById("tutor-ctrl-eval").classList.toggle("hidden", state.tutorMode !== "eval");
+
+      document.querySelectorAll(".diff-btn").forEach((btn) => {
+        const active = btn.dataset.diff === state.tutorDifficulty;
+        btn.className = active
+          ? "diff-btn min-h-[44px] px-1 rounded-xl text-[12px] font-bold border bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] border-transparent transition"
+          : "diff-btn min-h-[44px] px-1 rounded-xl text-[12px] font-semibold border bg-[#F5F5F2] dark:bg-[#101318] text-[#566070] dark:text-[#9CA6B8] border-transparent transition";
+      });
+
+      const personas = ROLEPLAY_PERSONAS[state.activeUser];
+      document.getElementById("rp-quick-chips").innerHTML = personas
+        .map((p, idx) => {
+          const active = idx === state.selectedPersonaIdx;
+          return `
+            <button type="button" data-persona-idx="${idx}" class="rp-chip-btn min-h-[36px] px-3 rounded-full text-[12px] font-bold active:scale-95 transition ${
+              active
+                ? "bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22]"
+                : "bg-[#F1F0EC] dark:bg-[#202530] text-[#374151] dark:text-[#D1D5DB]"
+            }">
+              ${escapeHTML(p.label)}
+            </button>
+          `;
+        })
+        .join("");
+
+      document.getElementById("nuance-quick-chips").innerHTML = NUANCE_CHIPS[state.activeUser]
+        .map(
+          (ch, idx) => `
+          <button type="button" data-nchip-idx="${idx}" class="nuance-chip-btn min-h-[34px] px-3 rounded-full bg-[#F1F0EC] dark:bg-[#202530] text-[12px] font-semibold text-[#374151] dark:text-[#D1D5DB] active:scale-95 transition">
+            ${escapeHTML(ch.title)}
+          </button>
+        `
+        )
+        .join("");
+
+      document.getElementById("eval-month-pills").innerHTML = [1, 2, 3, 4, 5, 6]
+        .map((m) => {
+          const active = m === state.tutorEvalMonth;
+          return `
+            <button type="button" data-eval-m="${m}" class="eval-m-btn min-h-[40px] rounded-xl text-[13px] font-bold transition ${
+              active
+                ? "bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22]"
+                : "bg-[#F5F5F2] dark:bg-[#101318] text-[#647082] dark:text-[#9CA6B8]"
+            }">${m}M</button>
+          `;
+        })
+        .join("");
+
+      const evalMonthObj = CURRICULUM[state.activeUser][state.tutorEvalMonth - 1];
+      const evalMission = evalMonthObj.items[3];
+      document.getElementById("eval-mission-summary").innerHTML = `
+        <span class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">${evalMonthObj.month}개월 차 월간 실전 미션</span>
+        <p class="text-[14px] font-bold text-[#1E2430] dark:text-white">${escapeHTML(evalMission.title)}</p>
+        <p class="text-[12.5px] text-[#647082] dark:text-[#9CA6B8] leading-relaxed">${escapeHTML(evalMission.scenario)}</p>
+      `;
+
+      updateTutorPromptPreview();
+    }
+
+    function updateTutorPromptPreview() {
+      const isBiz = state.activeUser === "husband";
+      const trackLabel = isBiz
+        ? "외국계 회사 본사(HQ) 및 해외 지사 소통 비즈니스 영어"
+        : "30대 실생활·여행·취향 영어 회화";
+      let prompt = "";
+
+      if (state.tutorMode === "roleplay") {
+        const persona = ROLEPLAY_PERSONAS[state.activeUser][state.selectedPersonaIdx] || ROLEPLAY_PERSONAS[state.activeUser][0];
+        const topic = document.getElementById("tutor-rp-input").value.trim() || persona.defaultTopic;
+        const diffGuide =
+          state.tutorDifficulty === "초급"
+            ? "초급 (천천히·힌트): 명료하고 쉬운 어휘로 천천히 말해줘. 내가 멈칫하면 짧은 영어 힌트를 부드럽게 던져줘."
+            : state.tutorDifficulty === "중급"
+            ? "중급 (자연스럽게): 자연스러운 원어민 속도로 대화하되, 세부 사항을 1~2번 자연스럽게 되물어봐 줘."
+            : "실전 (원어민 속도·까다롭게): 실제 글로벌 미팅/현지 상황처럼 현실적이고 날카로운 꼬리질문과 돌발 요소를 섞어줘.";
+
+        const targetBlock =
+          state.linkedMilestone && state.linkedMilestone.targets
+            ? `\n[오늘 연습할 핵심 표현]\n${state.linkedMilestone.targets.map((t) => `- ${t.en}`).join("\n")}\n(내가 이 표현들을 자연스럽게 써볼 수 있도록 대화를 유도해 줘.)`
+            : "";
+
+        prompt = `너는 지금부터 [${trackLabel}] 전담 1:1 원어민 AI 튜터이자 롤플레잉 파트너야.
+
+[페르소나 & 시나리오]
+- 너의 역할: ${persona.label} (${persona.roleDesc})
+- 연습 상황: ${topic}
+- 난이도: ${diffGuide}${targetBlock}
+
+[대화 진행 규칙]
+1. 영어로만 대화하고, 내가 많이 말할 수 있게 너의 답변은 항상 2~3문장 이내로 간결하게 유지해 줘.
+2. 대화 도중에는 내 문법 실수를 끊고 고치지 말고, 흐름을 살려 자연스럽게 대화를 이어가 줘.
+3. 내가 말이 막혀 한국어로 물어볼 때만 짧은 영어 힌트 1개를 알려줘.
+4. 내가 "피드백 줘"라고 말하면 롤플레잉을 종료하고, 한국어로 아래 [세션 리포트]를 정리해 줘:
+   - 잘한 점 1가지
+   - 내 발화 중 어색했던 표현 Top 3 교정 (내 문장 → 원어민 업그레이드 표현 + 뉘앙스 해설)
+   - 다음 출퇴근길 연습 팁 1가지
+
+준비됐으면 역할에 몰입해 영어로 먼저 말을 걸며 시작해 줘!`;
+      } else if (state.tutorMode === "nuance") {
+        const ko = document.getElementById("tutor-nuance-ko").value.trim() || "[한국어 의도를 입력하세요]";
+        const en = document.getElementById("tutor-nuance-en").value.trim();
+
+        prompt = `너는 [${trackLabel}] 전문 원어민 에디터야.
+
+[3단계 뉘앙스 교정 요청]
+- 내가 전달하고 싶은 한국어 의도: "${ko}"${en ? `\n- 내가 직접 만든 영어 초안: "${en}"` : ""}
+
+아래 3단계로 깔끔하게 정리해 줘:
+1) 문법 교정: 내 문장에서 문법 오류나 직역투로 어색한 부분 짚어주기
+2) 자연스러운 구어체: 동료·친구와 편하게 쓰는 원어민 구어체 버전
+3) ${isBiz ? "격식/세련된 원어민 표현: 본사 시니어·공식 미팅에서 신뢰감을 주는 프로페셔널 버전" : "격식/세련된 원어민 표현: 30대답게 정중하고 매너 있는 세련된 버전"} + 핵심 뉘앙스 해설 2줄`;
+      } else {
+        const evalMonthObj = CURRICULUM[state.activeUser][state.tutorEvalMonth - 1];
+        const mission = evalMonthObj.items[3];
+        const nextMonthObj = CURRICULUM[state.activeUser][state.tutorEvalMonth] || null;
+        const nextTheme = nextMonthObj ? `${nextMonthObj.month}개월 차 (${nextMonthObj.theme})` : "6개월 과정 졸업 후 실전 유지";
+
+        prompt = `너는 지금부터 [${trackLabel} ${evalMonthObj.month}개월 차 월간 실전 평가관]이야.
+
+[월간 실전 미션]
+- 미션명: ${mission.title}
+- 시나리오: ${mission.aiTopic}
+
+[평가 진행 방식]
+1. 실제 상황처럼 영어로 먼저 대화를 시작하고, 총 6~8턴 동안 현실적인 꼬리질문과 돌발 요소를 섞어 진행해 줘.
+2. 너의 답변은 2~3문장 이내로 유지하고, 대화 도중에는 교정하지 마.
+3. 대화가 끝나거나 내가 "피드백 줘"라고 하면, 즉시 한국어로 아래 [5점 루브릭 종합 성적표]를 출력해 줘:
+
+[월간 실전평가 성적표]
+- 유창성 (Fluency): ? / 5.0
+- 뉘앙스 (Nuance & Tone): ? / 5.0
+- 논리성/자연스러움 (Logic & Naturalness): ? / 5.0
+- 종합 점수: ? / 5.0
+- Top 3 교정 포인트 (내 문장 → 원어민 업그레이드 표현 + 해설)
+- 다음 달(${nextTheme}) 집중 포인트 1가지
+
+자, 지금 바로 상황에 몰입해 영어로 첫 마디를 건네줘!`;
+      }
+
+      document.getElementById("tutor-prompt-preview").textContent = prompt;
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll(".tab-panel").forEach((el) => {
+        el.classList.toggle("hidden", el.id !== `tab-${tabName}`);
+      });
+
+      document.querySelectorAll(".nav-tab").forEach((btn) => {
+        const active = btn.dataset.tab === tabName;
+        btn.className = active
+          ? "nav-tab min-h-[52px] flex flex-col items-center justify-center gap-1 rounded-2xl transition text-[#1E2430] dark:text-white"
+          : "nav-tab min-h-[52px] flex flex-col items-center justify-center gap-1 rounded-2xl transition text-[#9CA3AF] dark:text-[#6B7280]";
+      });
+
+      document.getElementById("main-scroll").scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function launchMilestoneInTutor(id) {
+      const milestone = findMilestoneById(state.activeUser, id);
+      if (!milestone) return;
+
+      if (milestone.isMission) {
+        state.tutorMode = "eval";
+        state.tutorEvalMonth = milestone.month;
+        state.linkedMilestone = null;
+      } else {
+        state.tutorMode = "roleplay";
+        state.linkedMilestone = milestone;
+        document.getElementById("tutor-rp-input").value = milestone.aiTopic;
+      }
+      renderTutorTab();
+      switchTab("tutor");
+      showToast("선택한 주제로 AI 튜터가 준비되었습니다");
+    }
+
+    function resetTutorInputsForActiveUser() {
+      state.selectedPersonaIdx = 0;
+      state.linkedMilestone = null;
+      const defaultPersona = ROLEPLAY_PERSONAS[state.activeUser][0];
+      document.getElementById("tutor-rp-input").value = defaultPersona.defaultTopic;
+
+      const defaultNuance = NUANCE_CHIPS[state.activeUser][0];
+      document.getElementById("tutor-nuance-ko").value = defaultNuance.ko;
+      document.getElementById("tutor-nuance-en").value = defaultNuance.en;
+    }
+
+    // =========================================================================
+    // 9. SHEETS & EVENT BINDINGS
+    // =========================================================================
+    function openSheet(sheetId) {
+      document.getElementById(sheetId).classList.remove("hidden");
+
+      if (sheetId === "sheet-log") {
+        document.getElementById("log-sheet-date").textContent = `${getTodayISO()} · ${getUserName(state.activeUser)}`;
+      } else if (sheetId === "sheet-vocab") {
+        state.selectedVocabTrack = state.activeUser;
+        renderVocabCatPills();
+      } else if (sheetId === "sheet-sync") {
+        document.getElementById("sync-room-input").value = state.roomCode;
+        document.getElementById("sync-husband-input").value = state.room.husbandName;
+        document.getElementById("sync-wife-input").value = state.room.wifeName;
+      }
+    }
+
+    function closeAllSheets() {
+      ["sheet-log", "sheet-vocab", "sheet-sync"].forEach((id) => {
+        document.getElementById(id).classList.add("hidden");
+      });
+    }
+
+    function renderVocabCatPills() {
+      document.querySelectorAll(".vcat-pill").forEach((btn) => {
+        const active = btn.dataset.vtrack === state.selectedVocabTrack;
+        btn.className = active
+          ? "vcat-pill min-h-[40px] rounded-xl text-[13px] font-bold border bg-[#1E2430] dark:bg-white text-white dark:text-[#161A22] border-transparent transition"
+          : "vcat-pill min-h-[40px] rounded-xl text-[13px] font-semibold border bg-[#F5F5F2] dark:bg-[#101318] text-[#566070] dark:text-[#9CA6B8] border-transparent transition";
+      });
+    }
+
+    function bindEvents() {
+      // Theme Toggle
+      document.getElementById("theme-toggle-btn").addEventListener("click", () => {
+        state.darkMode = !state.darkMode;
+        document.documentElement.classList.toggle("dark", state.darkMode);
+      });
+
+      // Profile Switcher
+      document.getElementById("switch-husband").addEventListener("click", () => {
+        if (state.activeUser === "husband") return;
+        state.activeUser = "husband";
+        state.curView = "mine";
+        state.fcIndex = 0;
+        state.fcFlipped = false;
+        resetTutorInputsForActiveUser();
+        renderAll();
+      });
+      document.getElementById("switch-wife").addEventListener("click", () => {
+        if (state.activeUser === "wife") return;
+        state.activeUser = "wife";
+        state.curView = "mine";
+        state.fcIndex = 0;
+        state.fcFlipped = false;
+        resetTutorInputsForActiveUser();
+        renderAll();
+      });
+
+      // Bottom Nav Tabs
+      document.querySelectorAll(".nav-tab").forEach((btn) => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+      });
+
+      // Open & Close Sheets
+      document.getElementById("open-sync-btn").addEventListener("click", () => openSheet("sheet-sync"));
+      document.getElementById("open-log-sheet-btn").addEventListener("click", () => openSheet("sheet-log"));
+      document.getElementById("open-vocab-sheet-btn").addEventListener("click", () => openSheet("sheet-vocab"));
+
+      document.querySelectorAll(".close-sheet").forEach((btn) => btn.addEventListener("click", closeAllSheets));
+      ["sheet-log", "sheet-vocab", "sheet-sync"].forEach((id) => {
+        document.getElementById(id).addEventListener("click", (e) => {
+          if (e.target.id === id) closeAllSheets();
+        });
+      });
+
+      // Sync Form
+      document.getElementById("copy-room-btn").addEventListener("click", () => {
+        const val = document.getElementById("sync-room-input").value.trim().toUpperCase();
+        copyText(val, `방 코드 [${val}]가 복사되었습니다`);
+      });
+      document.getElementById("sync-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const code = document.getElementById("sync-room-input").value.trim();
+        const h = document.getElementById("sync-husband-input").value.trim();
+        const w = document.getElementById("sync-wife-input").value.trim();
+        if (!code || !h || !w) return;
+        await saveSyncSettings(code, h, w);
+        closeAllSheets();
+      });
+
+      // Home: Next Step Quick Actions
+      document.getElementById("next-step-card").addEventListener("click", (e) => {
+        const tutorBtn = e.target.closest(".next-tutor-btn");
+        if (tutorBtn) {
+          launchMilestoneInTutor(tutorBtn.dataset.nextTutor);
+          return;
+        }
+        const doneBtn = e.target.closest(".next-done-btn");
+        if (doneBtn) {
+          toggleMilestoneCheck(doneBtn.dataset.nextDone);
+        }
+      });
+
+      // Home: Study Log Form & Feed Actions
+      document.getElementById("log-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const memo = document.getElementById("log-memo-input").value.trim();
+        const phrase = document.getElementById("log-phrase-input").value.trim();
+        const score = document.getElementById("log-score-input").value.trim();
+        if (!memo) return;
+        await addStudyLog(memo, phrase, score);
+        e.target.reset();
+        closeAllSheets();
+      });
+
+      document.getElementById("home-feed-list").addEventListener("click", (e) => {
+        const heartBtn = e.target.closest(".feed-heart-btn");
+        if (heartBtn) {
+          toggleLogHeart(heartBtn.dataset.likeId);
+          return;
+        }
+        const delBtn = e.target.closest(".feed-del-btn");
+        if (delBtn) removeStudyLog(delBtn.dataset.delLog);
+      });
+
+      // Curriculum Actions
+      document.getElementById("cur-view-mine").addEventListener("click", () => {
+        state.curView = "mine";
+        renderCurriculumTab();
+      });
+      document.getElementById("cur-view-partner").addEventListener("click", () => {
+        state.curView = "partner";
+        renderCurriculumTab();
+      });
+
+      document.getElementById("curriculum-list").addEventListener("click", (e) => {
+        const accBtn = e.target.closest(".cur-acc-btn");
+        if (accBtn) {
+          const m = Number(accBtn.dataset.monthAcc);
+          state.expandedMonths[m] = !state.expandedMonths[m];
+          renderCurriculumTab();
+          return;
+        }
+        const lessonBtn = e.target.closest(".lesson-toggle-btn");
+        if (lessonBtn) {
+          const id = lessonBtn.dataset.lessonToggle;
+          state.expandedLessons[id] = !state.expandedLessons[id];
+          renderCurriculumTab();
+          return;
+        }
+        const chkBtn = e.target.closest(".cur-check-item");
+        if (chkBtn && chkBtn.dataset.checkKey) {
+          toggleMilestoneCheck(chkBtn.dataset.checkKey);
+          return;
+        }
+        const speakBtn = e.target.closest(".cur-speak-btn");
+        if (speakBtn) {
+          speakText(speakBtn.dataset.speakText);
+          return;
+        }
+        const launchBtn = e.target.closest(".launch-tutor-btn");
+        if (launchBtn) {
+          launchMilestoneInTutor(launchBtn.dataset.launchTutor);
+        }
+      });
+
+      // Vocab Actions
+      document.getElementById("vocab-mode-list").addEventListener("click", () => {
+        state.vocabMode = "list";
+        renderVocabTab();
+      });
+      document.getElementById("vocab-mode-card").addEventListener("click", () => {
+        state.vocabMode = "card";
+        state.fcFlipped = false;
+        renderVocabTab();
+      });
+      document.getElementById("tts-speed-btn").addEventListener("click", () => {
+        state.ttsRate = state.ttsRate === 1.0 ? 0.8 : 1.0;
+        renderVocabTab();
+        showToast(`음성 속도 ${state.ttsRate.toFixed(1)}x`);
+      });
+      document.getElementById("vocab-search-input").addEventListener("input", (e) => {
+        state.vocabSearch = e.target.value;
+        state.fcIndex = 0;
+        state.fcFlipped = false;
+        renderVocabTab();
+      });
+      document.getElementById("vocab-filter-pills").addEventListener("click", (e) => {
+        const btn = e.target.closest(".vfilter-btn");
+        if (!btn) return;
+        state.vocabFilter = btn.dataset.vfilter;
+        state.fcIndex = 0;
+        state.fcFlipped = false;
+        renderVocabTab();
+      });
+      document.getElementById("vocab-list-container").addEventListener("click", (e) => {
+        const speakBtn = e.target.closest(".vocab-speak-btn");
+        if (speakBtn) {
+          speakText(speakBtn.dataset.speakText);
+          return;
+        }
+        const starBtn = e.target.closest(".vocab-star-btn");
+        if (starBtn) {
+          toggleBookmark(starBtn.dataset.bookmarkId);
+          return;
+        }
+        const delBtn = e.target.closest(".del-vocab-btn");
+        if (delBtn) removeCustomExpression(delBtn.dataset.delVocab);
+      });
+
+      // Flashcard Flip & Swipe
+      const stage = document.getElementById("fc-stage");
+      let touchStartX = 0;
+      stage.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      stage.addEventListener("touchend", (e) => {
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(dx) > 55) {
+          state.fcIndex += dx < 0 ? 1 : -1;
+          state.fcFlipped = false;
+          renderVocabTab();
+        }
+      }, { passive: true });
+
+      stage.addEventListener("click", (e) => {
+        if (e.target.closest("#fc-audio-btn")) return;
+        state.fcFlipped = !state.fcFlipped;
+        renderVocabTab();
+        if (state.fcFlipped) {
+          const deck = getFilteredExpressions();
+          if (deck[state.fcIndex]) speakText(deck[state.fcIndex].english);
+        }
+      });
+      document.getElementById("fc-audio-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        const deck = getFilteredExpressions();
+        if (deck[state.fcIndex]) speakText(deck[state.fcIndex].english);
+      });
+      document.getElementById("fc-prev-btn").addEventListener("click", () => {
+        state.fcIndex--;
+        state.fcFlipped = false;
+        renderVocabTab();
+      });
+      document.getElementById("fc-next-btn").addEventListener("click", () => {
+        state.fcIndex++;
+        state.fcFlipped = false;
+        renderVocabTab();
+      });
+
+      // Add Vocab Form
+      document.querySelectorAll(".vcat-pill").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.selectedVocabTrack = btn.dataset.vtrack;
+          renderVocabCatPills();
+        });
+      });
+      document.getElementById("vocab-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const en = document.getElementById("vocab-en-input").value.trim();
+        const ko = document.getElementById("vocab-ko-input").value.trim();
+        const nuance = document.getElementById("vocab-nuance-input").value.trim();
+        if (!en || !ko) return;
+        await addCustomExpression(state.selectedVocabTrack, en, ko, nuance);
+        e.target.reset();
+        closeAllSheets();
+      });
+
+      // AI Tutor Controls
+      document.getElementById("toggle-guide-btn").addEventListener("click", () => {
+        state.guideOpen = !state.guideOpen;
+        renderTutorTab();
+      });
+      document.querySelectorAll(".tmode-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.tutorMode = btn.dataset.tmode;
+          renderTutorTab();
+        });
+      });
+      document.getElementById("clear-linked-btn").addEventListener("click", () => {
+        state.linkedMilestone = null;
+        renderTutorTab();
+      });
+      document.querySelectorAll(".diff-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.tutorDifficulty = btn.dataset.diff;
+          renderTutorTab();
+        });
+      });
+      document.getElementById("rp-quick-chips").addEventListener("click", (e) => {
+        const btn = e.target.closest(".rp-chip-btn");
+        if (!btn) return;
+        const idx = Number(btn.dataset.personaIdx);
+        const persona = ROLEPLAY_PERSONAS[state.activeUser][idx];
+        if (!persona) return;
+        state.selectedPersonaIdx = idx;
+        state.linkedMilestone = null;
+        document.getElementById("tutor-rp-input").value = persona.defaultTopic;
+        renderTutorTab();
+      });
+      document.getElementById("nuance-quick-chips").addEventListener("click", (e) => {
+        const btn = e.target.closest(".nuance-chip-btn");
+        if (!btn) return;
+        const ch = NUANCE_CHIPS[state.activeUser][Number(btn.dataset.nchipIdx)];
+        if (!ch) return;
+        document.getElementById("tutor-nuance-ko").value = ch.ko;
+        document.getElementById("tutor-nuance-en").value = ch.en;
+        updateTutorPromptPreview();
+      });
+      document.getElementById("eval-month-pills").addEventListener("click", (e) => {
+        const btn = e.target.closest(".eval-m-btn");
+        if (!btn) return;
+        state.tutorEvalMonth = Number(btn.dataset.evalM);
+        renderTutorTab();
+      });
+      document.getElementById("tutor-rp-input").addEventListener("input", updateTutorPromptPreview);
+      document.getElementById("tutor-nuance-ko").addEventListener("input", updateTutorPromptPreview);
+      document.getElementById("tutor-nuance-en").addEventListener("input", updateTutorPromptPreview);
+
+      document.getElementById("copy-tutor-prompt-btn").addEventListener("click", () => {
+        copyText(
+          document.getElementById("tutor-prompt-preview").textContent,
+          "프롬프트 복사 완료! 제미나이에 바로 붙여넣으세요"
+        );
+      });
+    }
+
+    // =========================================================================
+    // 10. INITIALIZE APP
+    // =========================================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      bindEvents();
+      resetTutorInputsForActiveUser();
+      switchTab("home");
+      renderAll();
+      initFirebase();
+    });
+  </script>
+</body>
+</html>
